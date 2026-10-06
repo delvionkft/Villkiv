@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <rect width="800" height="600" fill="#0E2547"/>
+  <g stroke="#1F3B66" stroke-width="1"><path d="M0 100H800M0 200H800M0 300H800M0 400H800M0 500H800M100 0V600M200 0V600M300 0V600M400 0V600M500 0V600M600 0V600M700 0V600"/></g>
+  <rect x="70" y="70" width="440" height="400" fill="#13305A" stroke="#FFFFFF" stroke-width="4"/>
+  <path d="M90 190H490M90 330H490" stroke="#8FA3C0" stroke-width="10"/>
+  <g fill="#FFFFFF" stroke="#0B1D3A" stroke-width="2">
+    <rect x="104" y="150" width="54" height="84"/><rect x="164" y="150" width="34" height="84"/><rect x="204" y="150" width="34" height="84"/><rect x="244" y="150" width="34" height="84"/><rect x="284" y="150" width="34" height="84"/><rect x="324" y="150" width="34" height="84"/>
+    <rect x="104" y="290" width="34" height="84"/><rect x="144" y="290" width="34" height="84"/><rect x="184" y="290" width="34" height="84"/><rect x="224" y="290" width="34" height="84"/>
+  </g>
+  <g fill="#FFE81A"><rect x="122" y="178" width="18" height="22"/><rect x="174" y="178" width="14" height="22"/><rect x="214" y="178" width="14" height="22"/><rect x="254" y="178" width="14" height="22"/><rect x="294" y="178" width="14" height="22"/><rect x="334" y="178" width="14" height="22"/><rect x="114" y="318" width="14" height="22"/><rect x="154" y="318" width="14" height="22"/><rect x="194" y="318" width="14" height="22"/><rect x="234" y="318" width="14" height="22"/></g>
+  <!-- műszer -->
+  <rect x="540" y="200" width="190" height="290" rx="6" fill="#FFE81A" stroke="#0B1D3A" stroke-width="4"/>
+  <rect x="566" y="230" width="138" height="78" fill="#0B1D3A"/>
+  <path d="M590 270h30M632 270h30M674 270h12" stroke="#FFE81A" stroke-width="6"/>
+  <circle cx="635" cy="390" r="44" fill="#FFFFFF" stroke="#0B1D3A" stroke-width="4"/>
+  <path d="M635 390l24-26" stroke="#0B1D3A" stroke-width="5"/>
+  <path d="M590 490C560 540 420 520 340 380M680 490C690 560 470 560 250 380" stroke="#FFFFFF" stroke-width="5" fill="none"/>
+  <rect x="0" y="530" width="800" height="70" fill="#FFE81A"/>
+  <text x="32" y="575" font-family="DejaVu Sans, Arial, sans-serif" font-size="26" font-weight="700" fill="#0B1D3A" letter-spacing="2">HELYŐRZŐ</text>
+  <text x="232" y="575" font-family="DejaVu Sans, Arial, sans-serif" font-size="24" fill="#0B1D3A">Saját fotó: mérés az elosztónál</text>
+</svg>

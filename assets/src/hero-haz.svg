@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 1200" width="1440" height="1200">
+  <rect width="1440" height="1200" fill="#E8ECF1"/>
+  <g stroke="#C9D2DE" stroke-width="1">
+    <path d="M0 120H1440M0 240H1440M0 360H1440M0 480H1440M0 600H1440M0 720H1440M0 840H1440M0 960H1440M0 1080H1440"/>
+    <path d="M120 0V1200M240 0V1200M360 0V1200M480 0V1200M600 0V1200M720 0V1200M840 0V1200M960 0V1200M1080 0V1200M1200 0V1200M1320 0V1200"/>
+  </g>
+  <circle cx="1170" cy="230" r="84" fill="#FFE81A"/>
+  <g stroke="#0B1D3A" stroke-width="3" stroke-linecap="round">
+    <path d="M1170 100v-34M1170 394v-34M1040 230h-34M1334 230h-34M1078 138l-24-24M1286 346l-24-24M1078 322l-24 24M1286 114l-24 24"/>
+  </g>
+  <path d="M0 1010H1440" stroke="#0B1D3A" stroke-width="4"/>
+  <rect x="0" y="1010" width="1440" height="190" fill="#DCE2EA"/>
+  <!-- fa -->
+  <path d="M190 1010V860" stroke="#0B1D3A" stroke-width="6"/>
+  <circle cx="190" cy="780" r="110" fill="#FFFFFF" stroke="#0B1D3A" stroke-width="4"/>
+  <path d="M190 860l-50-60M190 830l46-52" stroke="#0B1D3A" stroke-width="3" fill="none"/>
+  <!-- ház -->
+  <rect x="380" y="650" width="760" height="360" fill="#FFFFFF" stroke="#0B1D3A" stroke-width="5"/>
+  <path d="M320 650L520 400H1000L1200 650Z" fill="#9AA8BB" stroke="#0B1D3A" stroke-width="5" stroke-linejoin="round"/>
+  <rect x="1030" y="420" width="56" height="130" fill="#FFFFFF" stroke="#0B1D3A" stroke-width="5"/>
+  <!-- napelem modulok -->
+  <g fill="#0E2547" stroke="#FFE81A" stroke-width="2">
+    <rect x="548" y="430" width="70" height="92"/><rect x="624" y="430" width="70" height="92"/><rect x="700" y="430" width="70" height="92"/><rect x="776" y="430" width="70" height="92"/><rect x="852" y="430" width="70" height="92"/>
+    <rect x="510" y="530" width="70" height="92"/><rect x="586" y="530" width="70" height="92"/><rect x="662" y="530" width="70" height="92"/><rect x="738" y="530" width="70" height="92"/><rect x="814" y="530" width="70" height="92"/><rect x="890" y="530" width="70" height="92"/>
+  </g>
+  <g stroke="#3D5A86" stroke-width="1.5">
+    <path d="M548 476H922M510 576H960"/>
+    <path d="M583 430v92M659 430v92M735 430v92M811 430v92M887 430v92M545 530v92M621 530v92M697 530v92M773 530v92M849 530v92M925 530v92"/>
+  </g>
+  <!-- ablakok, ajtó -->
+  <g fill="#E8ECF1" stroke="#0B1D3A" stroke-width="5">
+    <rect x="450" y="720" width="160" height="140"/><rect x="910" y="720" width="160" height="140"/><rect x="690" y="760" width="140" height="250"/>
+  </g>
+  <path d="M530 720v140M450 790h160M990 720v140M910 790h160" stroke="#0B1D3A" stroke-width="3"/>
+  <!-- méretvonal -->
+  <g stroke="#0B1D3A" stroke-width="2" fill="none">
+    <path d="M510 360H960M510 348v24M960 348v24"/>
+    <path d="M1250 650V1010M1238 650h24M1238 1010h24"/>
+  </g>
+  <rect x="250" y="0" width="940" height="96" fill="#0B1D3A"/>
+  <text x="290" y="60" font-family="DejaVu Sans, Arial, sans-serif" font-size="34" font-weight="700" fill="#FFE81A" letter-spacing="3">HELYŐRZŐ</text>
+  <text x="530" y="60" font-family="DejaVu Sans, Arial, sans-serif" font-size="30" fill="#FFFFFF">Saját fotó: családi ház napelemekkel</text>
+</svg>
