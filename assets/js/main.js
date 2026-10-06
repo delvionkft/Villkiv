@@ -61,7 +61,11 @@
     e.preventDefault();
     contact.scrollIntoView({ behavior: scrollBehavior(), block: 'start' });
     radio.focus({ preventScroll: true });
-    if (location.hash !== '#kapcsolat') history.pushState(null, '', '#kapcsolat');
+    try {
+      if (location.hash !== '#kapcsolat') history.pushState(null, '', '#kapcsolat');
+    } catch {
+      /* beágyazott vagy korlátozott környezetben az URL frissítése elhagyható */
+    }
   });
 
   const preset = new URLSearchParams(location.search).get('szolgaltatas');
