@@ -51,18 +51,22 @@ Ami csak „látványos”, az kimarad.
 - Megtakarítás- vagy megtérülés-kalkulátor, „becsült kWp” szám ígéretként.
 - Kitalált számlálók („500+ elégedett ügyfél”), értékelések, minősítések.
 - Chatbot-utánzat, automatikus képváltó, erős parallax.
-- Analitika hozzájárulás nélkül (GA4 csak sütihozzájárulás után).
+- Bármilyen analitika vagy követőkód (döntés szerint egyelőre nem kell).
 
-## Előfeltételek a következő munkamenet elején
-1. **Képek:** a felhőkörnyezet hálózati beállításában `canva.com` és `*.canva.com` engedélyezése, vagy a négy demókép letöltése és feltöltése:
-   - Családi ház napelemekkel – https://www.canva.com/M/MAHXOxjLfZI
-   - Mérés az elosztónál – https://www.canva.com/M/MAHXO-ZuxT4
-   - Elosztószekrény – https://www.canva.com/M/MAHXOzZUsow
-   - Ház napelemmel és autótöltővel – https://www.canva.com/M/MAHXOydcYWg
-2. **Döntések:**
-   - Vállalja-e a cég a hibajavítást, a napelem tervezését, kivitelezését, ügyintézését?
-   - Van-e űrlap-feldolgozó (Formspree, saját szerver)?
-   - Kell-e analitika?
+## Döntések (2026-10-06)
+- A cég vállalja a hibajavítást, valamint a napelemes rendszer tervezését, kivitelezését és az áramszolgáltatói ügyintézést. Ez már bekerült az oldalba.
+- Űrlap-feldolgozó egyelőre nincs. Élesítés előtt kötelező beállítani (javaslat: Formspree, ingyenes csomag, a cég saját fiókjával), addig az űrlap hibát jelez, és sosem mutat sikert.
+- Analitika egyelőre nem kell, ezért nem kerül fel semmilyen követőkód, és sütisáv sem kell.
+- A `canva.com` és a `*.canva.com` engedélyezve van a környezetben. Ez új munkamenetben lép életbe.
+
+## Teendő a következő munkamenet elején
+1. Ellenőrizni, hogy a Canva elérhető-e (`curl -sS -o /dev/null -w "%{http_code}" https://www.canva.com/`).
+2. A négy demóképet teljes méretben letölteni (Canva MCP: tervbe helyezés, majd PNG/JPG export), és `assets/src/<név>.demo.jpg` néven elmenteni, majd: `npm run images`.
+   - hero-haz – https://www.canva.com/M/MAHXOxjLfZI (média-azonosító: MAHXOxjLfZI)
+   - hero-meres – https://www.canva.com/M/MAHXO-ZuxT4 (MAHXO-ZuxT4)
+   - ev-eloszto – https://www.canva.com/M/MAHXOzZUsow (MAHXOzZUsow)
+   - napelem-otthon – https://www.canva.com/M/MAHXOydcYWg (MAHXOydcYWg)
+3. Utána a fenti kötelező elemek megvalósítása, sorrendben.
 
 ## Elfogadási feltételek
 - A meglévő 39 teszt zöld, és új tesztek fedik a helyzetválasztót, a többlépéses űrlapot (lépésváltás, vissza, piszkozat, előtöltés), az aktív menüt és az alsó CTA-sávot.
