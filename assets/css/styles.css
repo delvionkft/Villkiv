@@ -324,7 +324,46 @@ main:focus { outline: none; }
   text-decoration: none;
   transition: background-color 0.15s ease, color 0.15s ease;
 }
-.site-nav__list a:hover { background: var(--surface); color: var(--ink); }
+.site-nav__list a { position: relative; }
+.site-nav__list a::after {
+  content: "";
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 6px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--yellow);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.25s var(--ease);
+}
+.site-nav__list a:hover,
+.site-nav__list a[aria-current="true"] { color: var(--ink); }
+.site-nav__list a:hover::after,
+.site-nav__list a:focus-visible::after,
+.site-nav__list a[aria-current="true"]::after { transform: scaleX(1); }
+.site-nav__list a[aria-current="true"] { font-weight: 600; }
+
+/* Görgetést követő csík a fejléc alján */
+.scroll-progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 3px;
+  pointer-events: none;
+}
+.scroll-progress__bar {
+  display: block;
+  height: 100%;
+  background: var(--yellow);
+  transform-origin: 0 50%;
+  transform: scaleX(var(--scroll, 0));
+}
+@media (prefers-reduced-motion: reduce) {
+  .site-nav__list a::after { transition: none; }
+}
 .site-nav__cta { margin-left: 10px; }
 
 /* Mobil menü (csak ha fut a JavaScript; nélküle a menü a fejlécben tördelődik) */
@@ -385,6 +424,7 @@ main:focus { outline: none; }
     font-size: 1.0625rem;
     color: var(--ink);
   }
+  .js .site-nav__list a::after { left: 4px; right: auto; width: 32px; bottom: 10px; }
   .js .site-nav__cta { margin: 20px 0 0; width: 100%; }
 
   html:not(.js) .site-nav { width: 100%; padding-bottom: 12px; }
@@ -618,36 +658,91 @@ main:focus { outline: none; }
   background: var(--surface);
 }
 .flow__title { margin-bottom: 28px; }
-.flow__steps { display: grid; gap: 24px; }
-.flow__step { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 16px; }
-.flow__step .h4 { margin-bottom: 6px; }
-.flow__step p { font-size: 0.9375rem; color: var(--muted); }
-.flow__num,
-.step__num {
+/* --------------------------------------------------------------------------
+   Idővonal (felülvizsgálat menete, munka menete)
+   Görgetés közben „folyik az áram” a vezetékben: a kitöltés és a szikra
+   követi a görgetést, az elért lépések felkapcsolnak. JS nélkül statikus.
+   -------------------------------------------------------------------------- */
+.timeline-wrap { position: relative; }
+.timeline { display: grid; gap: 28px; position: relative; }
+.timeline__item {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  align-content: start;
+  gap: 16px;
+  position: relative;
+}
+.timeline__body { display: grid; gap: 6px; align-content: start; padding-top: 7px; }
+.timeline__body p { font-size: 0.9375rem; color: var(--muted); max-width: 44ch; }
+.timeline__num {
+  position: relative;
+  z-index: 1;
   display: grid;
   place-items: center;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  background: var(--navy-900);
-  color: var(--yellow);
+  border: 1px solid var(--border-strong);
+  background: var(--bg);
+  color: var(--navy-500);
   font-family: var(--font-head);
   font-weight: 650;
   font-size: 0.9375rem;
   font-variant-numeric: tabular-nums;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
+.timeline__item.is-on .timeline__num,
+html:not(.js) .timeline__num {
+  border-color: var(--navy-900);
+  background: var(--navy-900);
+  color: var(--yellow);
+  box-shadow: 0 0 0 5px rgba(255, 226, 26, 0.35);
+}
+
+/* A vezeték: a JS a lépésszámok középpontjai közé illeszti */
+.timeline__track {
+  display: none;
+  position: absolute;
+  z-index: 0;
+  background: var(--border-strong);
+  pointer-events: none;
+}
+.js .timeline__track.is-ready { display: block; }
+.timeline__fill {
+  position: absolute;
+  inset: 0;
+  background: var(--navy-900);
+  transform-origin: 0 0;
+  transform: scaleX(var(--p, 0));
+}
+.timeline__spark {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border-radius: 50%;
+  background: var(--yellow);
+  box-shadow: 0 0 0 3px var(--navy-900), 0 0 14px 4px rgba(255, 226, 26, 0.75);
+  left: calc(var(--p, 0) * 100%);
+  top: 50%;
+  opacity: var(--spark, 0);
+  transition: opacity 0.2s ease;
+}
+.timeline__track.is-vertical .timeline__fill { transform: scaleY(var(--p, 0)); }
+.timeline__track.is-vertical .timeline__spark { left: 50%; top: calc(var(--p, 0) * 100%); }
+
 @media (min-width: 900px) {
-  .flow__steps { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--gap); }
-  .flow__step { grid-template-columns: 1fr; gap: 14px; position: relative; }
-  .flow__step:not(:last-child)::after {
-    content: "";
-    position: absolute;
-    top: 18px;
-    left: 52px;
-    right: 0;
-    height: 1px;
-    background: var(--border-strong);
-  }
+  .timeline--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--gap); }
+  .timeline--3 .timeline__item { grid-template-columns: 1fr; gap: 16px; }
+  .timeline--3 .timeline__body { padding-top: 0; }
+}
+@media (min-width: 1024px) {
+  .timeline--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--gap); }
+  .timeline--4 .timeline__item { grid-template-columns: 1fr; gap: 16px; }
+  .timeline--4 .timeline__body { padding-top: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .timeline__num, .timeline__spark { transition: none; }
 }
 
 /* --------------------------------------------------------------------------
@@ -721,85 +816,6 @@ main:focus { outline: none; }
    A munka menete
    -------------------------------------------------------------------------- */
 .process { background: var(--surface); }
-.steps { display: grid; gap: 12px; }
-@media (min-width: 640px) { .steps { grid-template-columns: 1fr 1fr; } }
-@media (min-width: 1024px) { .steps { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
-.step {
-  display: grid;
-  gap: 12px;
-  align-content: start;
-  padding: 24px;
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
-  background: var(--bg);
-}
-.step__num { margin-bottom: 6px; }
-.step p { font-size: 0.9375rem; color: var(--muted); }
-
-/* --------------------------------------------------------------------------
-   Gyakori kérdések
-   -------------------------------------------------------------------------- */
-.faq__grid { display: grid; gap: 40px; }
-.faq__head { display: grid; gap: 14px; align-content: start; }
-.faq__head .eyebrow { margin-bottom: 4px; }
-@media (min-width: 1024px) {
-  .faq__grid { grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: clamp(48px, 6vw, 88px); }
-  .faq__head { position: sticky; top: calc(var(--header-h) + 40px); }
-}
-.faq__groups { display: grid; gap: 40px; min-width: 0; }
-.faq__group-title {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
-  font-family: var(--font-head);
-  font-weight: 620;
-  font-size: 1.125rem;
-  color: var(--ink);
-}
-.faq__group-icon {
-  display: grid;
-  place-items: center;
-  width: 30px;
-  height: 30px;
-  border-radius: var(--r-sm);
-  background: var(--navy-900);
-  color: var(--yellow);
-}
-.faq__group-icon svg { width: 16px; height: 16px; }
-.faq__item { border-bottom: 1px solid var(--border); }
-.faq__item summary {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-  min-height: 60px;
-  padding: 14px 0;
-  font-weight: 600;
-  font-size: 1.0625rem;
-  line-height: 1.4;
-  color: var(--ink);
-  cursor: pointer;
-  list-style: none;
-}
-.faq__item summary::-webkit-details-marker { display: none; }
-.faq__item summary svg {
-  width: 32px;
-  height: 32px;
-  padding: 8px;
-  flex: none;
-  border-radius: 50%;
-  background: var(--surface);
-  color: var(--ink);
-}
-.faq__item summary:hover svg { background: var(--yellow); }
-.faq__item[open] summary svg { transform: rotate(45deg); background: var(--yellow); }
-@media (prefers-reduced-motion: no-preference) {
-  .faq__item summary svg { transition: transform 0.2s var(--ease), background-color 0.15s ease; }
-}
-.faq__answer { display: grid; gap: 10px; padding: 0 48px 20px 0; color: var(--text); font-size: 0.9375rem; }
-.faq__answer ul { padding-left: 1.2em; display: grid; gap: 4px; }
-
 /* --------------------------------------------------------------------------
    Ajánlatkérés
    -------------------------------------------------------------------------- */

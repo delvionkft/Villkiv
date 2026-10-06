@@ -59,6 +59,7 @@
         <a class="btn btn--primary btn--sm site-nav__cta" href="#kapcsolat">Ajánlatot kérek</a>
       </nav>
     </div>
+    <div class="scroll-progress" aria-hidden="true"><span class="scroll-progress__bar"></span></div>
   </header>
 
   <main id="tartalom" tabindex="-1">
@@ -168,30 +169,33 @@
 
         <div class="flow" data-reveal>
           <h3 class="h3 flow__title">Így zajlik a felülvizsgálat</h3>
-          <ol class="flow__steps">
-            <li class="flow__step">
-              <span class="flow__num" aria-hidden="true">1</span>
-              <div>
+          <div class="timeline-wrap" data-timeline>
+            <span class="timeline__track" aria-hidden="true"><span class="timeline__fill"></span><span class="timeline__spark"></span></span>
+            <ol class="timeline timeline--3">
+            <li class="timeline__item">
+              <span class="timeline__num" aria-hidden="true">1</span>
+              <div class="timeline__body">
                 <h4 class="h4">Egyeztetés</h4>
                 <p>Megbeszéljük, milyen ingatlanról van szó, miért szeretnéd a felülvizsgálatot, és mikor tudunk kimenni.</p>
               </div>
             </li>
-            <li class="flow__step">
-              <span class="flow__num" aria-hidden="true">2</span>
-              <div>
+            <li class="timeline__item">
+              <span class="timeline__num" aria-hidden="true">2</span>
+              <div class="timeline__body">
                 <h4 class="h4">Helyszíni vizsgálat és mérések</h4>
                 <p>Átnézzük az elosztót, a vezetékeket és a szerelvényeket, majd műszerrel mérjük a védelmek működését. Ehhez rövid időre áramtalanítani kell.</p>
               </div>
             </li>
-            <li class="flow__step">
-              <span class="flow__num" aria-hidden="true">3</span>
-              <div>
+            <li class="timeline__item">
+              <span class="timeline__num" aria-hidden="true">3</span>
+              <div class="timeline__body">
                 <h4 class="h4">Eredmények és teendők</h4>
                 <!-- HELYŐRZŐ: a ténylegesen átadott dokumentáció (pl. minősítő irat, jegyzőkönyv) -->
                 <p>Elmondjuk, mit találtunk, mi sürgős és mi várhat. A vizsgálatról <span class="ph" data-placeholder>[átadott dokumentáció]</span> készül.</p>
               </div>
             </li>
           </ol>
+          </div>
         </div>
       </div>
     </section>
@@ -270,28 +274,39 @@
           <p class="section-head__text">Mindkét szolgáltatásnál ugyanígy indulunk, és minden lépésnél tudod, mi következik.</p>
         </header>
 
-        <ol class="steps" data-reveal>
-          <li class="step">
-            <span class="step__num" aria-hidden="true">1</span>
-            <h3 class="h4">Megírod, melyik szolgáltatás érdekel.</h3>
-            <p>Kiválasztod a szolgáltatást, és megadod, hol van az ingatlan. Egy-két mondat a helyzetről sokat segít.</p>
+        <div class="timeline-wrap" data-timeline data-reveal>
+          <span class="timeline__track" aria-hidden="true"><span class="timeline__fill"></span><span class="timeline__spark"></span></span>
+          <ol class="timeline timeline--4">
+          <li class="timeline__item">
+            <span class="timeline__num" aria-hidden="true">1</span>
+            <div class="timeline__body">
+              <h3 class="h4">Megírod, melyik szolgáltatás érdekel.</h3>
+              <p>Kiválasztod a szolgáltatást, és megadod, hol van az ingatlan. Egy-két mondat a helyzetről sokat segít.</p>
+            </div>
           </li>
-          <li class="step">
-            <span class="step__num" aria-hidden="true">2</span>
-            <h3 class="h4">Egyeztetjük az ingatlan adatait és az igényeidet.</h3>
-            <p>Pontosítjuk, mire van szükség. Napelemnél ekkor kérjük el a fogyasztási adatokat és néhány fotót.</p>
+          <li class="timeline__item">
+            <span class="timeline__num" aria-hidden="true">2</span>
+            <div class="timeline__body">
+              <h3 class="h4">Egyeztetjük az ingatlan adatait és az igényeidet.</h3>
+              <p>Pontosítjuk, mire van szükség. Napelemnél ekkor kérjük el a fogyasztási adatokat és néhány fotót.</p>
+            </div>
           </li>
-          <li class="step">
-            <span class="step__num" aria-hidden="true">3</span>
-            <h3 class="h4">Meghatározzuk a szükséges következő lépéseket.</h3>
-            <p>Elmondjuk, kell-e helyszíni bejárás, mi kerül bele az ajánlatba, és mire számíthatsz.</p>
+          <li class="timeline__item">
+            <span class="timeline__num" aria-hidden="true">3</span>
+            <div class="timeline__body">
+              <h3 class="h4">Meghatározzuk a szükséges következő lépéseket.</h3>
+              <p>Elmondjuk, kell-e helyszíni bejárás, mi kerül bele az ajánlatba, és mire számíthatsz.</p>
+            </div>
           </li>
-          <li class="step">
-            <span class="step__num" aria-hidden="true">4</span>
-            <h3 class="h4">Az egyeztetett feltételek alapján megkezdődik a munka.</h3>
-            <p>A munka akkor indul, amikor a tartalmában, az árában és az időpontjában megállapodtunk.</p>
+          <li class="timeline__item">
+            <span class="timeline__num" aria-hidden="true">4</span>
+            <div class="timeline__body">
+              <h3 class="h4">Az egyeztetett feltételek alapján megkezdődik a munka.</h3>
+              <p>A munka akkor indul, amikor a tartalmában, az árában és az időpontjában megállapodtunk.</p>
+            </div>
           </li>
         </ol>
+        </div>
       </div>
     </section>
 
@@ -323,74 +338,6 @@
         </div>
       </section>
     </template>
-
-    <!-- ============ GYAKORI KÉRDÉSEK ============ -->
-    <section class="section faq" id="gyik" aria-labelledby="gyik-cim">
-      <div class="wrap faq__grid">
-        <header class="faq__head" data-reveal>
-          <p class="eyebrow">Gyakori kérdések</p>
-          <h2 class="h2" id="gyik-cim">Amit az ajánlatkérés előtt kérdezni szoktak.</h2>
-          <p class="section-head__text">Nem találod a választ? Írd meg a kérdésed az ajánlatkérő űrlapon.</p>
-        </header>
-
-        <div class="faq__groups">
-          <div class="faq__group" data-reveal>
-            <h3 class="faq__group-title"><span class="faq__group-icon" aria-hidden="true"><svg><use href="#i-shield"/></svg></span>Érintésvédelem</h3>
-            <details class="faq__item">
-              <summary>Mit ellenőriznek a felülvizsgálat során?<svg aria-hidden="true"><use href="#i-plus"/></svg></summary>
-              <div class="faq__answer">
-                <p>Először szemrevételezéssel átnézzük az elosztót, a vezetékek, a csatlakozások és a szerelvények állapotát. Utána műszerrel mérünk: jellemzően a védővezető folytonosságát, a szigetelési ellenállást, a hibahurok-impedanciát és az áram-védőkapcsoló kioldását.</p>
-                <p>Hogy pontosan mi kerül bele a vizsgálatba, az a felülvizsgálat típusától függ. Ezt az egyeztetéskor megmondjuk.</p>
-              </div>
-            </details>
-            <details class="faq__item">
-              <summary>Hogyan készüljek a helyszíni vizsgálatra?<svg aria-hidden="true"><use href="#i-plus"/></svg></summary>
-              <div class="faq__answer">
-                <p>Gondoskodj róla, hogy hozzáférjünk az elosztószekrényhez, a mérőhelyhez és minden helyiséghez. Ha van korábbi jegyzőkönyv vagy villamos terv, tedd félre.</p>
-                <p>A mérések idején rövidebb ideig nem lesz áram, ezért a számítógépet és az áramszünetre érzékeny eszközöket érdemes előre lekapcsolni.</p>
-              </div>
-            </details>
-            <details class="faq__item">
-              <summary>Mi történik, ha hiányosságot találnak?<svg aria-hidden="true"><use href="#i-plus"/></svg></summary>
-              <div class="faq__answer">
-                <p>Megmutatjuk és leírjuk, mi a hiba, mennyire sürgős, és mit kell tenni a megszüntetéséhez. Közvetlen veszélyt jelentő hibánál javasoljuk az érintett áramkör azonnali lekapcsolását.</p>
-                <p>A feltárt hibák javítását is vállaljuk, erre külön ajánlatot adunk.</p>
-              </div>
-            </details>
-          </div>
-
-          <div class="faq__group" data-reveal>
-            <h3 class="faq__group-title"><span class="faq__group-icon" aria-hidden="true"><svg><use href="#i-sun"/></svg></span>Napelemes rendszerek</h3>
-            <details class="faq__item">
-              <summary>Milyen adatok szükségesek az ajánlatkéréshez?<svg aria-hidden="true"><use href="#i-plus"/></svg></summary>
-              <div class="faq__answer">
-                <p>Kezdésnek elég a település és pár mondat az ingatlanról. Az egyeztetéshez jól jön:</p>
-                <ul>
-                  <li>az elmúlt 12 hónap villanyszámlái vagy az éves fogyasztás,</li>
-                  <li>a csatlakozás típusa (egy- vagy háromfázisú), ha tudod,</li>
-                  <li>néhány fotó a tetőről és a mérőhelyről,</li>
-                  <li>a tervezett új fogyasztók, például klíma vagy autótöltő.</li>
-                </ul>
-              </div>
-            </details>
-            <details class="faq__item">
-              <summary>Mitől függ a megfelelő rendszer mérete?<svg aria-hidden="true"><use href="#i-plus"/></svg></summary>
-              <div class="faq__answer">
-                <p>Elsősorban az éves fogyasztástól, és attól, hogy a nap melyik részében használod az áramot. Korlátot jelenthet a tető hasznos felülete és tájolása, valamint a hálózati csatlakozás teljesítménye. A tervezett új fogyasztók növelhetik a szükséges méretet.</p>
-              </div>
-            </details>
-            <details class="faq__item">
-              <summary>Hogyan derül ki, hogy alkalmas-e az ingatlanom?<svg aria-hidden="true"><use href="#i-plus"/></svg></summary>
-              <div class="faq__answer">
-                <p>Az első képet fotók és alapadatok alapján is meg lehet rajzolni. A végleges választ a helyszínen kapod: ott látszik a tető szerkezete és állapota, az árnyékolás, a mérőhely és az elektromos hálózat állapota.</p>
-                <!-- HELYŐRZŐ: a helyszíni felmérés menete és feltételei (díjas / díjmentes – csak megerősített információ!) -->
-                <p><span class="ph" data-placeholder>[Ellenőrizendő: a helyszíni felmérés menete és feltételei]</span></p>
-              </div>
-            </details>
-          </div>
-        </div>
-      </div>
-    </section>
 
     <!-- ============ AJÁNLATKÉRÉS / KAPCSOLAT ============ -->
     <section class="section contact" id="kapcsolat" aria-labelledby="kapcsolat-cim">
@@ -527,7 +474,6 @@
           <li><a href="#erintesvedelem">Érintésvédelem</a></li>
           <li><a href="#napelem">Napelemes rendszerek</a></li>
           <li><a href="#menete">A munka menete</a></li>
-          <li><a href="#gyik">Gyakori kérdések</a></li>
           <li><a href="#kapcsolat">Ajánlatkérés</a></li>
         </ul>
       </nav>

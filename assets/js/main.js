@@ -316,6 +316,122 @@
     root.classList.add('reveal-ready');
   }
 
+  /* ---------------------------------------------------------------------
+     Görgetéskövetés: fejléccsík, aktív menüpont, idővonalak
+     --------------------------------------------------------------------- */
+  const progressBar = document.querySelector('.scroll-progress__bar');
+  const navLinks = [...document.querySelectorAll('.site-nav__list a[href^="#"]')];
+  const spySections = navLinks
+    .map((a) => ({ link: a, section: document.getElementById(a.getAttribute('href').slice(1)) }))
+    .filter((x) => x.section);
+  const headerEl = document.querySelector('.site-header');
+
+  const timelines = [...document.querySelectorAll('[data-timeline]')].map((wrap) => ({
+    wrap,
+    track: wrap.querySelector('.timeline__track'),
+    items: [...wrap.querySelectorAll('.timeline__item')],
+    nums: [...wrap.querySelectorAll('.timeline__num')],
+    vertical: false,
+    centers: [],
+  }));
+
+  // A vezetéket a lépésszámok középpontjai közé illesztjük (elrendezésfüggő)
+  const layoutTimelines = () => {
+    timelines.forEach((t) => {
+      if (!t.track || t.nums.length < 2) return;
+      const base = t.wrap.getBoundingClientRect();
+      t.centers = t.nums.map((n) => {
+        const r = n.getBoundingClientRect();
+        return { x: r.left + r.width / 2 - base.left, y: r.top + r.height / 2 - base.top };
+      });
+      const first = t.centers[0];
+      const last = t.centers[t.centers.length - 1];
+      t.vertical = Math.abs(last.y - first.y) > Math.abs(last.x - first.x);
+      Object.assign(t.track.style, t.vertical
+        ? { left: `${first.x - 1}px`, top: `${first.y}px`, width: '2px', height: `${last.y - first.y}px` }
+        : { left: `${first.x}px`, top: `${first.y - 1}px`, width: `${last.x - first.x}px`, height: '2px' });
+      t.track.classList.toggle('is-vertical', t.vertical);
+      t.track.classList.add('is-ready');
+    });
+  };
+
+  const updateTimelines = () => {
+    const vh = window.innerHeight;
+    timelines.forEach((t) => {
+      if (!t.centers.length) return;
+      let p;
+      if (reduceMotion.matches) {
+        p = 1;
+      } else if (t.vertical) {
+        // Függőleges: a vezeték a képernyő kb. 60%-áig töltődik
+        const top = t.wrap.getBoundingClientRect().top;
+        const first = t.centers[0].y;
+        const span = t.centers[t.centers.length - 1].y - first;
+        p = (vh * 0.6 - (top + first)) / span;
+      } else {
+        // Vízszintes: a képernyő alsó negyedétől a közepéig töltődik fel
+        const top = t.wrap.getBoundingClientRect().top + t.centers[0].y;
+        p = (vh * 0.85 - top) / (vh * 0.4);
+      }
+      p = Math.min(1, Math.max(0, p));
+      t.track.style.setProperty('--p', p.toFixed(4));
+      t.track.style.setProperty('--spark', p > 0 && p < 1 ? '1' : '0');
+      const n = t.items.length;
+      t.items.forEach((item, i) => item.classList.toggle('is-on', p > 0 && p >= i / (n - 1) - 0.001));
+    });
+  };
+
+  const updateSpy = () => {
+    const line = (headerEl ? headerEl.getBoundingClientRect().bottom : 0) + window.innerHeight * 0.3;
+    let current = null;
+    spySections.forEach((x) => {
+      if (x.section.getBoundingClientRect().top <= line) current = x;
+    });
+    const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
+    if (atBottom && spySections.length) current = spySections[spySections.length - 1];
+    spySections.forEach((x) => {
+      if (x === current) x.link.setAttribute('aria-current', 'true');
+      else x.link.removeAttribute('aria-current');
+    });
+  };
+
+  const updateProgress = () => {
+    if (!progressBar) return;
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    const p = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
+    progressBar.style.setProperty('--scroll', p.toFixed(4));
+  };
+
+  let ticking = false;
+  const onScroll = () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => {
+      ticking = false;
+      updateProgress();
+      updateSpy();
+      updateTimelines();
+    });
+  };
+  const onResize = () => {
+    layoutTimelines();
+    onScroll();
+  };
+
+  layoutTimelines();
+  updateProgress();
+  updateSpy();
+  updateTimelines();
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onResize);
+  window.addEventListener('load', onResize);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(onResize);
+  if ('ResizeObserver' in window) {
+    const ro = new ResizeObserver(onResize);
+    timelines.forEach((t) => ro.observe(t.wrap));
+  }
+  reduceMotion.addEventListener?.('change', onScroll);
+
   document.querySelectorAll('[data-year]').forEach((el) => {
     el.textContent = String(new Date().getFullYear());
   });

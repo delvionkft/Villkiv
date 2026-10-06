@@ -430,6 +430,105 @@ await test('küldés közben a gomb letiltva, dupla kattintás egy kérést kül
   );
 });
 
+console.log('\nGörgetéskövetés');
+await test('a gyakori kérdések szekció nincs az oldalon', async () => {
+  const { page, context } = await open({ width: 1280, height: 800 });
+  const n = await page.evaluate(() => document.querySelectorAll('#gyik, .faq, a[href="#gyik"]').length);
+  assert(n === 0, `maradt GYIK-elem: ${n}`);
+  await context.close();
+});
+
+await test('fejléccsík: tetején 0, közepén részleges, alján teljes', async () => {
+  const { page, context } = await open({ width: 1280, height: 800 });
+  const at = async (frac) => {
+    await page.evaluate((f) => window.scrollTo({ top: (document.documentElement.scrollHeight - innerHeight) * f, behavior: 'instant' }), frac);
+    await page.waitForTimeout(120);
+    return page.evaluate(() => new DOMMatrix(getComputedStyle(document.querySelector('.scroll-progress__bar')).transform).a);
+  };
+  const [a, b, c] = [await at(0), await at(0.5), await at(1)];
+  assert(a < 0.01 && b > 0.4 && b < 0.6 && c > 0.99, `arányok: ${a}, ${b}, ${c}`);
+  const visible = await page.evaluate(() => {
+    const r = document.querySelector('.scroll-progress__bar').getBoundingClientRect();
+    return r.height >= 2 && r.top >= 0;
+  });
+  assert(visible, 'a csík nem látszik');
+  await context.close();
+});
+
+await test('aktív menüpont követi a görgetést; egerezéskor is megjelenik a csík', async () => {
+  const { page, context } = await open({ width: 1440, height: 900 });
+  const active = () => page.evaluate(() => [...document.querySelectorAll('.site-nav__list a[aria-current="true"]')].map((a) => a.getAttribute('href')));
+  assert((await active()).length === 0, `a nyitószekciónál nem lehet aktív menüpont: ${await active()}`);
+  for (const id of ['erintesvedelem', 'napelem', 'menete', 'kapcsolat']) {
+    await page.evaluate((i) => document.getElementById(i).scrollIntoView({ behavior: 'instant' }), id);
+    await page.waitForTimeout(150);
+    const a = await active();
+    assert(a.length === 1 && a[0] === `#${id}`, `#${id} helyett aktív: ${a}`);
+  }
+  await page.waitForTimeout(400);
+  const underline = async (sel) => page.evaluate((s) => new DOMMatrix(getComputedStyle(document.querySelector(s), '::after').transform).a, sel);
+  assert((await underline('.site-nav__list a[href="#kapcsolat"]')) > 0.99, 'az aktív menüpont alatt nincs csík');
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+  await page.hover('.site-nav__list a[href="#napelem"]');
+  await page.waitForTimeout(400);
+  assert((await underline('.site-nav__list a[href="#napelem"]')) > 0.99, 'egerezéskor nincs csík');
+  await context.close();
+});
+
+for (const [width, height] of [[1440, 900], [390, 844]]) {
+  await test(`idővonalak: görgetéssel töltődnek, a lépések sorban kapcsolnak fel @${width}px`, async () => {
+    const { page, context } = await open({ width, height });
+    const state = () => page.evaluate(() => [...document.querySelectorAll('[data-timeline]')].map((w) => ({
+      ready: w.querySelector('.timeline__track').classList.contains('is-ready'),
+      p: parseFloat(w.querySelector('.timeline__track').style.getPropertyValue('--p') || '0'),
+      on: [...w.querySelectorAll('.timeline__item')].map((i) => i.classList.contains('is-on')),
+    })));
+    let s = await state();
+    assert(s.length === 2 && s.every((t) => t.ready), 'a vezeték nem készült el');
+    assert(s.every((t) => t.p === 0 && t.on.every((x) => !x)), `betöltéskor már töltve: ${JSON.stringify(s)}`);
+    // Végiggörgetés kis lépésekben: a kitöltés sosem csökken, a felkapcsolt lépések mindig elöl vannak
+    const max = await page.evaluate(() => document.documentElement.scrollHeight - innerHeight);
+    const prev = [0, 0];
+    let sawPartial = false;
+    for (let y = 0; y <= max; y += 120) {
+      await page.evaluate((top) => window.scrollTo({ top, behavior: 'instant' }), y);
+      await page.waitForTimeout(30);
+      s = await state();
+      s.forEach((t, i) => {
+        assert(t.p + 1e-6 >= prev[i], `visszafelé töltődött (${i}. idővonal)`);
+        prev[i] = t.p;
+        const firstOff = t.on.indexOf(false);
+        assert(firstOff === -1 || t.on.slice(firstOff).every((x) => !x), `nem sorban kapcsolt: ${t.on}`);
+        if (t.p > 0.1 && t.p < 0.9) sawPartial = true;
+      });
+    }
+    assert(sawPartial, 'nem volt köztes (részlegesen töltött) állapot');
+    s = await state();
+    assert(s.every((t) => t.p === 1 && t.on.every(Boolean)), `a végén nincs teljesen töltve: ${JSON.stringify(s)}`);
+    // A vezeték a számok középpontján fut
+    const aligned = await page.evaluate(() => [...document.querySelectorAll('[data-timeline]')].every((w) => {
+      const tr = w.querySelector('.timeline__track').getBoundingClientRect();
+      const nums = [...w.querySelectorAll('.timeline__num')].map((n) => n.getBoundingClientRect());
+      const vertical = tr.height > tr.width;
+      return nums.every((n) => vertical
+        ? Math.abs(n.left + n.width / 2 - (tr.left + tr.width / 2)) < 2
+        : Math.abs(n.top + n.height / 2 - (tr.top + tr.height / 2)) < 2);
+    }));
+    assert(aligned, 'a vezeték nem a lépésszámok közepén fut');
+    await context.close();
+  });
+}
+
+await test('csökkentett mozgásnál az idővonalak statikusan, teljesen kitöltve jelennek meg', async () => {
+  const { page, context } = await open({ width: 1280, height: 800 }, { reducedMotion: 'reduce' });
+  const s = await page.evaluate(() => [...document.querySelectorAll('[data-timeline]')].map((w) => ({
+    p: w.querySelector('.timeline__track').style.getPropertyValue('--p'),
+    on: [...w.querySelectorAll('.timeline__item')].every((i) => i.classList.contains('is-on')),
+  })));
+  assert(s.every((t) => t.p === '1.0000' && t.on), JSON.stringify(s));
+  await context.close();
+});
+
 console.log('\nTeljesítmény és mozgás');
 for (const width of [390, 1440]) {
   await test(`elrendezésugrás (CLS) lassú képekkel és betűkkel < 0,02 @${width}px`, async () => {
