@@ -18,13 +18,12 @@ lines.forEach((line, i) => {
   if (found.size) hits.push(`${String(i + 1).padStart(4)}: ${[...found].join(' | ')}`);
 });
 
-// Képek: amelyikhez még csak SVG helyőrző van az assets/src mappában
+// Képek: amelyikhez még nincs saját fotó (csak demókép vagy SVG helyőrző)
 const srcFiles = await readdir(new URL('../assets/src/', import.meta.url));
-const names = [...new Set(srcFiles.map((f) => f.replace(/\.[^.]+$/, '')))];
+const names = [...new Set(srcFiles.map((f) => f.split('.')[0]))];
 for (const name of names) {
-  if (!srcFiles.some((f) => f.startsWith(`${name}.`) && !f.endsWith('.svg'))) {
-    hits.push(`kép: assets/src/${name}.svg → cseréld saját fotóra (${name}.jpg), majd: npm run images`);
-  }
+  const own = srcFiles.some((f) => /\.(jpe?g|png|webp|avif|tiff?)$/i.test(f) && f.startsWith(`${name}.`) && !f.includes('.demo.'));
+  if (!own) hits.push(`kép: ${name} → tedd be a saját fotót (assets/src/${name}.jpg), majd: npm run images`);
 }
 
 if (hits.length) {

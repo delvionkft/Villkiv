@@ -2,7 +2,7 @@
 //
 // Saját fotó cseréje: tedd a fotót az assets/src mappába ugyanazzal a névvel
 // (pl. hero-haz.jpg), majd futtasd: npm run images
-// A fotó elsőbbséget kap az azonos nevű SVG helyőrzővel szemben.
+// A saját fotó elsőbbséget kap a demóképpel (név.demo.jpg) és az SVG helyőrzővel szemben.
 // A kimenet mindig a megadott képarányra vágott AVIF és WebP, így az oldal
 // elrendezése (és az index.html width/height értékei) nem változik.
 import { readdir, rm, mkdir } from 'node:fs/promises';
@@ -15,10 +15,10 @@ const OUT = path.join(ROOT, 'assets/img');
 
 // ratio: szélesség / magasság — egyezzen az index.html width/height arányával
 export const IMAGES = {
-  'hero-haz': { ratio: 6 / 5, widths: [480, 768, 1080, 1440] },
+  'hero-haz': { ratio: 4 / 5, widths: [480, 720, 960, 1200] },
   'hero-meres': { ratio: 4 / 3, widths: [320, 480, 640] },
-  'ev-eloszto': { ratio: 4 / 5, widths: [400, 640, 880] },
-  'napelem-otthon': { ratio: 5 / 4, widths: [480, 768, 1080, 1500] },
+  'ev-eloszto': { ratio: 3 / 2, widths: [640, 960, 1280] },
+  'napelem-otthon': { ratio: 4 / 3, widths: [640, 960, 1280] },
 };
 
 const PHOTO_EXT = ['.jpg', '.jpeg', '.png', '.webp', '.avif', '.tif', '.tiff'];
@@ -27,10 +27,12 @@ const files = await readdir(SRC);
 await mkdir(OUT, { recursive: true });
 
 for (const [name, { ratio, widths }] of Object.entries(IMAGES)) {
-  const candidates = files.filter((f) => path.parse(f).name === name);
+  // Sorrend: saját fotó (hero-haz.jpg) → demókép (hero-haz.demo.jpg) → SVG helyőrző
+  const isPhoto = (f) => PHOTO_EXT.includes(path.extname(f).toLowerCase());
   const source =
-    candidates.find((f) => PHOTO_EXT.includes(path.extname(f).toLowerCase())) ??
-    candidates.find((f) => path.extname(f).toLowerCase() === '.svg');
+    files.find((f) => path.parse(f).name === name && isPhoto(f)) ??
+    files.find((f) => path.parse(f).name === `${name}.demo` && isPhoto(f)) ??
+    files.find((f) => f === `${name}.svg`);
   if (!source) {
     console.warn(`! Nincs forrás: ${name} (assets/src/${name}.jpg)`);
     continue;

@@ -1,26 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1250" width="1000" height="1250">
-  <rect width="1000" height="1250" fill="#F2F4F0"/>
-  <g stroke="#DCE1E6" stroke-width="1"><path d="M0 125H1000M0 250H1000M0 375H1000M0 500H1000M0 625H1000M0 750H1000M0 875H1000M0 1000H1000M0 1125H1000M125 0V1250M250 0V1250M375 0V1250M500 0V1250M625 0V1250M750 0V1250M875 0V1250"/></g>
-  <path d="M300 0V180M420 0V180M540 0V180M660 0V180" stroke="#0B1D3A" stroke-width="6"/>
-  <rect x="160" y="180" width="680" height="820" fill="#FFFFFF" stroke="#0B1D3A" stroke-width="6"/>
-  <rect x="200" y="220" width="600" height="740" fill="none" stroke="#0B1D3A" stroke-width="2" stroke-dasharray="10 8"/>
-  <path d="M220 400H780M220 640H780" stroke="#9AA8BB" stroke-width="14"/>
-  <g fill="#E8ECF1" stroke="#0B1D3A" stroke-width="3">
-    <rect x="236" y="330" width="110" height="140"/>
-    <rect x="356" y="330" width="56" height="140"/><rect x="420" y="330" width="56" height="140"/><rect x="484" y="330" width="56" height="140"/><rect x="548" y="330" width="56" height="140"/><rect x="612" y="330" width="56" height="140"/><rect x="676" y="330" width="56" height="140"/>
-    <rect x="236" y="570" width="56" height="140"/><rect x="300" y="570" width="56" height="140"/><rect x="364" y="570" width="56" height="140"/><rect x="428" y="570" width="56" height="140"/><rect x="492" y="570" width="56" height="140"/>
-  </g>
-  <g fill="#FFE81A" stroke="#0B1D3A" stroke-width="2">
-    <rect x="270" y="372" width="40" height="36"/><rect x="370" y="372" width="28" height="36"/><rect x="434" y="372" width="28" height="36"/><rect x="498" y="372" width="28" height="36"/><rect x="562" y="372" width="28" height="36"/><rect x="626" y="372" width="28" height="36"/><rect x="690" y="372" width="28" height="36"/>
-    <rect x="250" y="612" width="28" height="36"/><rect x="314" y="612" width="28" height="36"/><rect x="378" y="612" width="28" height="36"/><rect x="442" y="612" width="28" height="36"/><rect x="506" y="612" width="28" height="36"/>
-  </g>
-  <g stroke="#0B1D3A" stroke-width="2" fill="none">
-    <path d="M291 330V250H880M291 250"/><circle cx="880" cy="250" r="8" fill="#0B1D3A"/>
-    <path d="M704 710V800H880"/><circle cx="880" cy="800" r="8" fill="#0B1D3A"/>
-  </g>
-  <text x="896" y="242" font-family="DejaVu Sans, Arial, sans-serif" font-size="22" fill="#0B1D3A">FI</text>
-  <path d="M160 1060H840M160 1046v28M840 1046v28" stroke="#0B1D3A" stroke-width="2"/>
-  <rect x="0" y="1150" width="1000" height="100" fill="#0B1D3A"/>
-  <text x="40" y="1212" font-family="DejaVu Sans, Arial, sans-serif" font-size="32" font-weight="700" fill="#FFE81A" letter-spacing="3">HELYŐRZŐ</text>
-  <text x="270" y="1212" font-family="DejaVu Sans, Arial, sans-serif" font-size="28" fill="#FFFFFF">Saját fotó: elosztószekrény, felülvizsgálat</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 853" width="1280" height="853">
+  <rect width="1280" height="853" fill="#E8EDF4"/>
+  <g fill="none" stroke="#4A6289" stroke-width="6.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.55"><path d="M654.2166666666667 331.72222222222223L583.1333333333333 440.71666666666664H635.2611111111111L621.0444444444445 521.2777777777778L696.8666666666667 412.28333333333336H644.7388888888889Z" /></g>
+  <text x="640.0" y="587.6222222222223" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif" font-size="25" fill="#4A6289" opacity="0.8">Fotó helye · elosztószekrény, felülvizsgálat</text>
 </svg>

@@ -1,28 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 1200" width="1500" height="1200">
-  <rect width="1500" height="1200" fill="#1B3862"/>
-  <g stroke="#26467A" stroke-width="1"><path d="M0 150H1500M0 300H1500M0 450H1500M0 600H1500M0 750H1500M0 900H1500M0 1050H1500M150 0V1200M300 0V1200M450 0V1200M600 0V1200M750 0V1200M900 0V1200M1050 0V1200M1200 0V1200M1350 0V1200"/></g>
-  <circle cx="260" cy="230" r="76" fill="none" stroke="#FFE81A" stroke-width="6"/>
-  <path d="M0 980H1500" stroke="#FFFFFF" stroke-width="4"/>
-  <!-- ház oldalnézet, ferde tető -->
-  <path d="M360 980V600L760 340L1160 600V980Z" fill="#14305A" stroke="#FFFFFF" stroke-width="5" stroke-linejoin="round"/>
-  <path d="M300 640L760 340L1220 640" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linejoin="round"/>
-  <g fill="#0B1D3A" stroke="#FFE81A" stroke-width="3">
-    <path d="M800 400L900 465L900 560L800 495Z"/><path d="M910 472L1010 537L1010 632L910 567Z"/>
-    <path d="M790 520L890 585L890 680L790 615Z"/><path d="M900 592L1000 657L1000 752L900 687Z"/>
-  </g>
-  <g fill="#1B3862" stroke="#FFFFFF" stroke-width="4">
-    <rect x="440" y="720" width="150" height="130"/><rect x="660" y="760" width="120" height="220"/>
-  </g>
-  <!-- inverter, autótöltő, kültéri egység -->
-  <rect x="860" y="760" width="90" height="120" fill="#FFFFFF" stroke="#0B1D3A" stroke-width="3"/>
-  <rect x="880" y="780" width="50" height="24" fill="#FFE81A"/>
-  <rect x="1010" y="760" width="70" height="110" fill="#FFE81A" stroke="#0B1D3A" stroke-width="3"/>
-  <path d="M1045 870C1045 930 1120 930 1180 960" stroke="#FFE81A" stroke-width="5" fill="none"/>
-  <rect x="1180" y="900" width="220" height="80" fill="none" stroke="#FFFFFF" stroke-width="4"/>
-  <circle cx="1230" cy="980" r="26" fill="#1B3862" stroke="#FFFFFF" stroke-width="4"/><circle cx="1350" cy="980" r="26" fill="#1B3862" stroke="#FFFFFF" stroke-width="4"/>
-  <rect x="200" y="860" width="120" height="90" fill="#FFFFFF" stroke="#0B1D3A" stroke-width="3"/>
-  <circle cx="245" cy="905" r="30" fill="none" stroke="#0B1D3A" stroke-width="3"/>
-  <rect x="0" y="1100" width="1100" height="100" fill="#FFE81A"/>
-  <text x="44" y="1162" font-family="DejaVu Sans, Arial, sans-serif" font-size="34" font-weight="700" fill="#0B1D3A" letter-spacing="3">HELYŐRZŐ</text>
-  <text x="292" y="1162" font-family="DejaVu Sans, Arial, sans-serif" font-size="30" fill="#0B1D3A">Saját fotó: napelemes rendszer lakóházon</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 960" width="1280" height="960">
+  <rect width="1280" height="960" fill="#1B3459"/>
+  <g fill="none" stroke="#B8C4D6" stroke-width="7.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.55"><circle cx="640.0" cy="480.0" r="48.0"/><path d="M640.0 373.3333333333333v26.666666666666668M640.0 560.0v26.666666666666668M533.3333333333334 480.0h26.666666666666668M720.0 480.0h26.666666666666668"/></g>
+  <text x="640.0" y="661.3333333333334" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif" font-size="28" fill="#B8C4D6" opacity="0.8">Fotó helye · napelemes rendszer lakóházon</text>
 </svg>

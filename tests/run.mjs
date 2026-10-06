@@ -125,10 +125,11 @@ await test('asztali nézetben a főcím, a választók és a fő fotó az első 
 for (const width of [1024, 1280, 1440, 1920]) {
   await test(`asztali főcím pontosan két sorban, szóelválasztás nélkül @${width}px`, async () => {
     const { page, context } = await open({ width, height: 900 });
-    const lines = await page.evaluate(() =>
-      [...document.querySelectorAll('.hero__line')].map((l) => l.getClientRects().length && Math.round(l.getBoundingClientRect().height / parseFloat(getComputedStyle(l).lineHeight))),
-    );
-    assert(lines.every((n) => n === 1), `soronkénti tördelés: ${lines}`);
+    const lines = await page.evaluate(() => {
+      const h = document.querySelector('.hero__title');
+      return Math.round(h.getBoundingClientRect().height / parseFloat(getComputedStyle(h).lineHeight));
+    });
+    assert(lines === 2, `a főcím ${lines} soros`);
     await context.close();
   });
 }
