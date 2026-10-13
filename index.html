@@ -43,6 +43,8 @@
     <symbol id="i-inverter" viewBox="0 0 24 24"><rect x="4" y="3.5" width="16" height="17" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 8.5h8M8 15c1.3-2 2.7-2 4 0s2.7 2 4 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
     <symbol id="i-battery" viewBox="0 0 24 24"><rect x="3" y="7" width="16" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M21 10.5v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="m11.5 8.8-2.3 3.4h2.6l-.6 3 2.4-3.6h-2.6z" fill="currentColor"/></symbol>
     <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 4v16h16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="m7.5 15 3.5-4 3 2.5 5-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="d-arcs" viewBox="0 0 400 400"><g fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="400" cy="0" r="90"/><circle cx="400" cy="0" r="150"/><circle cx="400" cy="0" r="210"/><circle cx="400" cy="0" r="270"/><circle cx="400" cy="0" r="330"/></g><g fill="currentColor"><circle cx="310" cy="0" r="4"/><circle cx="294" cy="106" r="4"/><circle cx="209" cy="170" r="4"/></g></symbol>
+    <symbol id="d-circuit" viewBox="0 0 320 220"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M0 40h90l30 30h80M200 70h120M120 70v80h60l20 20h120M0 150h60l20-20h40M180 150v70"/></g><g fill="currentColor"><circle cx="90" cy="40" r="4"/><circle cx="200" cy="70" r="4"/><circle cx="120" cy="150" r="4"/><circle cx="200" cy="170" r="4"/><rect x="56" y="146" width="8" height="8"/></g></symbol>
   </svg>
 
   <a class="skip-link" href="#tartalom">Ugrás a tartalomra</a>
@@ -104,6 +106,8 @@
         </div>
 
         <div class="hero__media">
+          <svg class="deco deco--hero-arcs" aria-hidden="true" focusable="false"><use href="#d-arcs"/></svg>
+          <span class="deco deco--dots deco--hero-dots" aria-hidden="true"></span>
           <picture class="media media--hero">
             <source type="image/avif" srcset="assets/img/hero-haz-480.avif 480w, assets/img/hero-haz-720.avif 720w, assets/img/hero-haz-960.avif 960w, assets/img/hero-haz-1200.avif 1200w" sizes="(min-width: 1024px) 40vw, 100vw">
             <source type="image/webp" srcset="assets/img/hero-haz-480.webp 480w, assets/img/hero-haz-720.webp 720w, assets/img/hero-haz-960.webp 960w, assets/img/hero-haz-1200.webp 1200w" sizes="(min-width: 1024px) 40vw, 100vw">
@@ -133,6 +137,7 @@
 
     <!-- ============ 01 ÉRINTÉSVÉDELEM ============ -->
     <section class="section ev" id="erintesvedelem" aria-labelledby="ev-cim">
+      <svg class="deco deco--ev-circuit" aria-hidden="true" focusable="false"><use href="#d-circuit"/></svg>
       <div class="wrap">
         <div class="ev__head">
           <header class="ev__intro" data-reveal>
@@ -151,11 +156,13 @@
             </a>
           </header>
           <figure class="ev__photo" data-reveal>
+            <div class="framed">
             <picture class="media media--wide">
               <source type="image/avif" srcset="assets/img/ev-eloszto-640.avif 640w, assets/img/ev-eloszto-960.avif 960w, assets/img/ev-eloszto-1280.avif 1280w" sizes="(min-width: 1024px) 560px, 100vw">
               <source type="image/webp" srcset="assets/img/ev-eloszto-640.webp 640w, assets/img/ev-eloszto-960.webp 960w, assets/img/ev-eloszto-1280.webp 1280w" sizes="(min-width: 1024px) 560px, 100vw">
               <img src="assets/img/ev-eloszto-960.webp" width="1280" height="853" alt="Elosztódoboz és inverter egy családi ház műszaki helyiségében, rendezett kábelezéssel" loading="lazy" decoding="async">
             </picture>
+            </div>
             <!-- ELLENŐRIZENDŐ: a 20 000–60 000 Ft bruttó (áfával) értendő? Lakossági oldalon bruttó árat kell feltüntetni. -->
             <dl class="stats stats--light">
               <div class="stat">
@@ -226,6 +233,8 @@
 
     <!-- ============ 02 NAPELEM ============ -->
     <section class="section pv" id="napelem" aria-labelledby="pv-cim">
+      <svg class="deco deco--pv-arcs" aria-hidden="true" focusable="false"><use href="#d-arcs"/></svg>
+      <span class="deco deco--dots deco--pv-dots" aria-hidden="true"></span>
       <div class="wrap">
         <div class="pv__head">
           <div class="pv__intro" data-reveal>
@@ -241,7 +250,7 @@
               <li><svg aria-hidden="true"><use href="#i-check"/></svg>Beüzemelés, monitoring</li>
             </ul>
           </div>
-          <figure class="pv__photo" data-reveal>
+          <figure class="pv__photo framed framed--dark" data-reveal>
             <picture class="media media--pv">
               <source type="image/avif" srcset="assets/img/napelem-otthon-640.avif 640w, assets/img/napelem-otthon-960.avif 960w, assets/img/napelem-otthon-1280.avif 1280w" sizes="(min-width: 1024px) 600px, 100vw">
               <source type="image/webp" srcset="assets/img/napelem-otthon-640.webp 640w, assets/img/napelem-otthon-960.webp 960w, assets/img/napelem-otthon-1280.webp 1280w" sizes="(min-width: 1024px) 600px, 100vw">
@@ -320,6 +329,7 @@
 
     <!-- ============ A MUNKA MENETE ============ -->
     <section class="section process" id="menete" aria-labelledby="menete-cim">
+      <svg class="deco deco--process-circuit" aria-hidden="true" focusable="false"><use href="#d-circuit"/></svg>
       <div class="wrap">
         <header class="section-head" data-reveal>
           <p class="eyebrow"><span class="eyebrow__num">03</span>A munka menete</p>
@@ -364,6 +374,7 @@
 
     <!-- ============ MIÉRT MI ============ -->
     <section class="section trust" id="rolunk" aria-labelledby="rolunk-cim">
+      <span class="deco deco--dots deco--trust-dots" aria-hidden="true"></span>
       <div class="wrap trust__grid">
         <header class="trust__head" data-reveal>
           <p class="eyebrow"><span class="eyebrow__num">04</span>VILLKIV Mérnökiroda</p>
@@ -449,6 +460,7 @@
 
     <!-- ============ AJÁNLATKÉRÉS / KAPCSOLAT ============ -->
     <section class="section contact" id="kapcsolat" aria-labelledby="kapcsolat-cim">
+      <svg class="deco deco--contact-arcs" aria-hidden="true" focusable="false"><use href="#d-arcs"/></svg>
       <div class="wrap contact__grid">
         <div class="contact__info" data-reveal>
           <p class="eyebrow eyebrow--dark"><span class="eyebrow__num">05</span>Ajánlatkérés</p>

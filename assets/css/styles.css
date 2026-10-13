@@ -27,9 +27,9 @@
   --navy-800: #132a4c;
   --navy-700: #1d3a63;
   --navy-500: #4a6289;
-  --yellow: #ffe21a;
-  --yellow-hover: #f5d500;
-  --yellow-tint: #fff8d1;
+  --yellow: #e2c45b;
+  --yellow-hover: #d3b247;
+  --yellow-tint: #f8f1dc;
 
   /* Felületek és szöveg */
   --bg: #ffffff;
@@ -83,7 +83,7 @@ html {
 
 body {
   margin: 0;
-  background: var(--bg);
+  background: var(--surface);
   color: var(--text);
   font-family: var(--font);
   font-size: 1rem;
@@ -135,8 +135,8 @@ main:focus { outline: none; }
 
 /* Helyőrző – élesítés előtt mind cserélendő (npm run check:placeholders) */
 .ph {
-  background: rgba(255, 226, 26, 0.38);
-  color: inherit;
+  background: rgba(226, 196, 91, 0.45);
+  color: var(--ink);
   border-radius: 4px;
   padding: 0 0.25em;
   outline: 1px dashed rgba(11, 30, 58, 0.4);
@@ -146,9 +146,9 @@ main:focus { outline: none; }
 .pv .ph,
 .contact__info .ph,
 .site-footer .ph {
-  background: rgba(255, 226, 26, 0.14);
+  background: rgba(226, 196, 91, 0.14);
   color: var(--yellow);
-  outline-color: rgba(255, 226, 26, 0.55);
+  outline-color: rgba(226, 196, 91, 0.55);
 }
 
 /* --------------------------------------------------------------------------
@@ -439,7 +439,7 @@ main:focus { outline: none; }
 .site-header :focus-visible { outline-color: var(--yellow); }
 .site-header .brand { color: var(--on-dark); }
 .site-header .brand__mark { background: var(--yellow); color: var(--navy-900); }
-.site-header .ph { background: rgba(255, 226, 26, 0.14); color: var(--yellow); outline-color: rgba(255, 226, 26, 0.55); }
+.site-header .ph { background: rgba(226, 196, 91, 0.14); color: var(--yellow); outline-color: rgba(226, 196, 91, 0.55); }
 .site-header .site-nav__list a { color: var(--on-dark-muted); }
 .site-header .site-nav__list a:hover,
 .site-header .site-nav__list a[aria-current="true"] { color: var(--on-dark); }
@@ -468,13 +468,60 @@ main:focus { outline: none; }
 /* --------------------------------------------------------------------------
    Szekciók
    -------------------------------------------------------------------------- */
-.section { padding-block: var(--section-y); }
+.section { position: relative; overflow: clip; padding-block: var(--section-y); }
+.section > .wrap { position: relative; z-index: 1; }
+.ev, .trust { background: var(--bg); }
+
+/* Sötét szekciók: lekerekített, beljebb húzott panelek a világos oldalon –
+   így a fehér és a sötétkék közti váltás nem éles, teljes szélességű vágás */
+.pv, .contact {
+  margin: clamp(8px, 1.6vw, 20px);
+  border-radius: clamp(20px, 3vw, 36px);
+}
 
 .section-head {
   display: grid;
   gap: 0;
   margin-bottom: clamp(48px, 5vw, 72px);
   max-width: 760px;
+}
+
+/* --------------------------------------------------------------------------
+   Díszítőelemek – napív, kapcsolási rajz, pontrács, eltolt keret
+   -------------------------------------------------------------------------- */
+.deco { position: absolute; pointer-events: none; z-index: 0; }
+.deco--dots {
+  background-image: radial-gradient(circle, currentColor 1.4px, transparent 1.7px);
+  background-size: 16px 16px;
+}
+.framed { position: relative; }
+.framed::before {
+  content: "";
+  position: absolute;
+  inset: 14px -14px -14px 14px;
+  border: 1.5px solid var(--yellow);
+  border-radius: var(--r-lg);
+  z-index: 0;
+  pointer-events: none;
+}
+.framed > picture, .framed > .media { position: relative; z-index: 1; }
+@media (max-width: 639px) { .framed::before { inset: 10px -8px -10px 8px; } }
+
+.deco--hero-arcs { top: -90px; right: -110px; width: 380px; height: 380px; color: var(--yellow); opacity: 0.45; }
+.deco--hero-dots { right: -26px; bottom: -26px; width: 168px; height: 128px; color: var(--yellow); opacity: 0.5; }
+.hero__media .media--hero { z-index: 1; }
+.hero__detail { z-index: 2; }
+
+.deco--ev-circuit { top: 56px; right: -60px; width: 340px; height: 234px; color: var(--border-strong); opacity: 0.7; }
+.deco--pv-arcs { top: 0; right: 0; width: min(420px, 60%); height: 420px; color: var(--yellow); opacity: 0.14; }
+.deco--pv-dots { left: clamp(16px, 3vw, 40px); bottom: clamp(24px, 4vw, 56px); width: 180px; height: 120px; color: var(--yellow); opacity: 0.25; }
+.deco--process-circuit { left: -50px; bottom: 24px; width: 320px; height: 220px; color: var(--border-strong); opacity: 0.6; transform: scaleX(-1); }
+.deco--trust-dots { top: clamp(48px, 7vw, 96px); right: 3%; width: 220px; height: 150px; color: var(--navy-500); opacity: 0.22; }
+.deco--contact-arcs { left: 0; bottom: 0; width: min(420px, 70%); height: 420px; color: var(--yellow); opacity: 0.2; transform: rotate(180deg); }
+@media (max-width: 639px) {
+  .deco--hero-arcs { width: 240px; height: 240px; top: -56px; right: -70px; }
+  .deco--ev-circuit, .deco--process-circuit { width: 220px; height: 150px; }
+  .deco--trust-dots { width: 140px; height: 100px; }
 }
 
 /* --------------------------------------------------------------------------
@@ -493,7 +540,7 @@ main:focus { outline: none; }
   overflow: clip;
 }
 .hero :focus-visible { outline-color: var(--yellow); }
-.hero .ph { background: rgba(255, 226, 26, 0.14); color: var(--yellow); outline-color: rgba(255, 226, 26, 0.55); }
+.hero .ph { background: rgba(226, 196, 91, 0.14); color: var(--yellow); outline-color: rgba(226, 196, 91, 0.55); }
 .hero__grid {
   position: relative;
   display: grid;
@@ -521,7 +568,7 @@ main:focus { outline: none; }
   height: 8px;
   border-radius: 50%;
   background: var(--yellow);
-  box-shadow: 0 0 0 3px rgba(255, 226, 26, 0.25);
+  box-shadow: 0 0 0 3px rgba(226, 196, 91, 0.25);
 }
 
 .hero .hero__title { color: var(--on-dark); }
@@ -643,7 +690,9 @@ main:focus { outline: none; }
 .ev__head { display: grid; gap: 48px; align-items: center; }
 .ev__intro { display: grid; gap: 24px; justify-items: start; align-content: start; }
 .ev__intro .eyebrow, .ev__intro .h2 { margin-bottom: 0; }
-.ev__photo { display: grid; gap: 14px; min-width: 0; }
+.ev__photo { display: grid; gap: 32px; min-width: 0; }
+.ev__photo .stats { margin-top: 0; }
+.ev__photo .ev__term { margin-top: -18px; }
 .ev__term { font-size: 0.875rem; color: var(--muted); max-width: 56ch; }
 @media (min-width: 1024px) {
   .ev__head { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(56px, 7vw, 104px); }
@@ -702,7 +751,7 @@ main:focus { outline: none; }
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  border: 1px solid #f2dc72;
+  border: 1px solid #e6d39a;
   border-radius: var(--r-sm);
   background: var(--yellow-tint);
   color: var(--text);
@@ -756,7 +805,7 @@ html:not(.js) .timeline__num {
   border-color: var(--navy-900);
   background: var(--navy-900);
   color: var(--yellow);
-  box-shadow: 0 0 0 5px rgba(255, 226, 26, 0.35);
+  box-shadow: 0 0 0 5px rgba(226, 196, 91, 0.35);
 }
 
 /* A vezeték: a JS a lépésszámok középpontjai közé illeszti */
@@ -782,7 +831,7 @@ html:not(.js) .timeline__num {
   margin: -6px 0 0 -6px;
   border-radius: 50%;
   background: var(--yellow);
-  box-shadow: 0 0 0 3px var(--navy-900), 0 0 14px 4px rgba(255, 226, 26, 0.75);
+  box-shadow: 0 0 0 3px var(--navy-900), 0 0 14px 4px rgba(226, 196, 91, 0.75);
   left: calc(var(--p, 0) * 100%);
   top: 50%;
   opacity: var(--spark, 0);
@@ -869,10 +918,10 @@ html:not(.js) .timeline__num {
 .pv__how { margin-top: clamp(72px, 8vw, 112px); }
 .timeline-wrap--dark .timeline__track { background: rgba(255, 255, 255, 0.18); }
 .timeline-wrap--dark .timeline__fill { background: var(--yellow); }
-.timeline-wrap--dark .timeline__spark { box-shadow: 0 0 0 3px var(--navy-900), 0 0 16px 5px rgba(255, 226, 26, 0.8); }
+.timeline-wrap--dark .timeline__spark { box-shadow: 0 0 0 3px var(--navy-900), 0 0 16px 5px rgba(226, 196, 91, 0.8); }
 .timeline-wrap--dark .timeline__num { background: var(--navy-800); border-color: rgba(255, 255, 255, 0.22); color: var(--on-dark-muted); }
 .timeline-wrap--dark .timeline__item.is-on .timeline__num,
-html:not(.js) .timeline-wrap--dark .timeline__num { background: var(--yellow); border-color: var(--yellow); color: var(--navy-900); box-shadow: 0 0 0 5px rgba(255, 226, 26, 0.18); }
+html:not(.js) .timeline-wrap--dark .timeline__num { background: var(--yellow); border-color: var(--yellow); color: var(--navy-900); box-shadow: 0 0 0 5px rgba(226, 196, 91, 0.18); }
 .timeline-wrap--dark .timeline__body p { color: var(--on-dark-muted); }
 .timeline__num svg { width: 22px; height: 22px; }
 .pv__monitor {
@@ -1187,7 +1236,7 @@ legend.field__label { margin-bottom: 10px; }
 }
 
 @media print {
-  .site-header, .contact__form { display: none; }
+  .site-header, .contact__form, .deco { display: none; }
   .pv, .contact, .site-footer { background: none; color: #000; }
   [data-reveal] { opacity: 1 !important; transform: none !important; }
 }
