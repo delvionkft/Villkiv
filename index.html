@@ -138,7 +138,13 @@
           <header class="ev__intro" data-reveal>
             <p class="eyebrow"><span class="eyebrow__num">01</span>Érintésvédelem</p>
             <h2 class="h2" id="ev-cim">Tudd meg, milyen állapotban van otthonod elektromos hálózata.</h2>
-            <p class="lead">Hivatalos mérésekkel ellenőrizzük a hálózatot, és jegyzőkönyvben rögzítjük az eredményt.</p>
+            <p class="lead">Feltárjuk a veszélyes hibákat, hogy csökkenjen az áramütés és a villamos eredetű tűz kockázata.</p>
+            <ul class="scope scope--light" aria-label="Amit kapsz">
+              <li><svg aria-hidden="true"><use href="#i-check"/></svg>Műszeres mérések</li>
+              <li><svg aria-hidden="true"><use href="#i-check"/></svg>Részletes jegyzőkönyv</li>
+              <li><svg aria-hidden="true"><use href="#i-check"/></svg>Javítási javaslatok</li>
+              <li><svg aria-hidden="true"><use href="#i-check"/></svg>Fotódokumentáció, ha kell</li>
+            </ul>
             <a class="btn btn--primary" href="#kapcsolat" data-service="erintesvedelem">
               Felülvizsgálatra kérek ajánlatot
               <svg class="btn__icon" aria-hidden="true"><use href="#i-arrow"/></svg>
@@ -150,9 +156,18 @@
               <source type="image/webp" srcset="assets/img/ev-eloszto-640.webp 640w, assets/img/ev-eloszto-960.webp 960w, assets/img/ev-eloszto-1280.webp 1280w" sizes="(min-width: 1024px) 560px, 100vw">
               <img src="assets/img/ev-eloszto-960.webp" width="1280" height="853" alt="Lakóház elosztószekrénye kismegszakítókkal és áram-védőkapcsolóval, mellette mérőműszer" loading="lazy" decoding="async">
             </picture>
-            <figcaption class="ev__term">
-              <strong>Érintésvédelem:</strong> a védővezető, a fi-relé és a kismegszakítók hiba esetén időben lekapcsolnak, így nem ér áramütés.
-            </figcaption>
+            <!-- ELLENŐRIZENDŐ: a 20 000–60 000 Ft bruttó (áfával) értendő? Lakossági oldalon bruttó árat kell feltüntetni. -->
+            <dl class="stats stats--light">
+              <div class="stat">
+                <dt class="stat__label">Lakossági felülvizsgálat</dt>
+                <dd class="stat__value">20–60 ezer Ft</dd>
+              </div>
+              <div class="stat">
+                <dt class="stat__label">A vizsgálat időtartama</dt>
+                <dd class="stat__value">30–120 perc</dd>
+              </div>
+            </dl>
+            <figcaption class="ev__term">Az ár és az időtartam a mérési pontok számától és a helyszíntől függ.</figcaption>
           </figure>
         </div>
 
@@ -160,13 +175,13 @@
           <h3 class="h3">Mikor érdemes?</h3>
           <ul class="when__grid">
             <li class="when__item"><span class="when__icon" aria-hidden="true"><svg><use href="#i-key"/></svg></span>Régebbi ingatlant vettél vagy örököltél</li>
-            <li class="when__item"><span class="when__icon" aria-hidden="true"><svg><use href="#i-tools"/></svg></span>Felújítás előtt állsz</li>
+            <li class="when__item"><span class="when__icon" aria-hidden="true"><svg><use href="#i-tools"/></svg></span>Új építés vagy átalakítás után</li>
             <li class="when__item"><span class="when__icon" aria-hidden="true"><svg><use href="#i-tag"/></svg></span>Eladás vagy bérbeadás előtt</li>
-            <li class="when__item"><span class="when__icon" aria-hidden="true"><svg><use href="#i-help"/></svg></span>Bizonytalan vagy a hálózat biztonságában</li>
+            <li class="when__item"><span class="when__icon" aria-hidden="true"><svg><use href="#i-clock"/></svg></span>Időszakos ellenőrzésként</li>
           </ul>
           <div class="when__notes">
             <p class="note note--warn"><svg class="note__icon" aria-hidden="true"><use href="#i-alert"/></svg><span><strong>Szikrázás, égett szag, áramütés?</strong> Kapcsold le az áramkört, és ne használd.</span></p>
-            <p class="note">A feltárt hibák javítását is vállaljuk. Hogy nálad kötelező-e a vizsgálat, az ingatlantól és a céltól függ – egyeztetéskor átbeszéljük.</p>
+            <p class="note">A feltárt hibák javítását is vállaljuk. Ha hatóság észrevételt tesz, a jegyzőkönyvünk pontosításában díjmentesen segítünk.</p>
           </div>
         </div>
 
@@ -174,26 +189,33 @@
           <h3 class="h3 flow__title">Így zajlik a felülvizsgálat</h3>
           <div class="timeline-wrap" data-timeline>
             <span class="timeline__track" aria-hidden="true"><span class="timeline__fill"></span><span class="timeline__spark"></span></span>
-            <ol class="timeline timeline--3">
+            <ol class="timeline timeline--4">
               <li class="timeline__item">
                 <span class="timeline__num" aria-hidden="true">1</span>
                 <div class="timeline__body">
-                  <h4 class="h4">Egyeztetés</h4>
-                  <p>Megbeszéljük a részleteket és az időpontot.</p>
+                  <h4 class="h4">Felmérés</h4>
+                  <p>A hálózat, az elosztók és a berendezések átvizsgálása.</p>
                 </div>
               </li>
               <li class="timeline__item">
                 <span class="timeline__num" aria-hidden="true">2</span>
                 <div class="timeline__body">
-                  <h4 class="h4">Vizsgálat és mérések</h4>
-                  <p>Helyszíni átvizsgálás, műszeres mérések.</p>
+                  <h4 class="h4">Mérés</h4>
+                  <p>Földelés, hurokellenállás, fi-relé működése.</p>
                 </div>
               </li>
               <li class="timeline__item">
                 <span class="timeline__num" aria-hidden="true">3</span>
                 <div class="timeline__body">
-                  <h4 class="h4">Jegyzőkönyv és teendők</h4>
-                  <p>Megkapod a jegyzőkönyvet, és elmondjuk, mi a teendő.</p>
+                  <h4 class="h4">Kiértékelés</h4>
+                  <p>Összevetés a követelményekkel, a hibás pontok megjelölése.</p>
+                </div>
+              </li>
+              <li class="timeline__item">
+                <span class="timeline__num" aria-hidden="true">4</span>
+                <div class="timeline__body">
+                  <h4 class="h4">Jegyzőkönyv</h4>
+                  <p>Mérési eredmények és javítási javaslatok.</p>
                 </div>
               </li>
             </ol>
@@ -450,6 +472,18 @@
                 </label>
               </div>
               <p class="field__error" id="szolgaltatas-hiba"></p>
+            </fieldset>
+
+            <fieldset class="field field--points" id="pontok-mezo" aria-describedby="pontok-sugo pontok-hiba">
+              <legend class="field__label">Mérési pontok a felülvizsgálathoz <span class="field__opt">(nem kötelező)</span></legend>
+              <p class="field__hint" id="pontok-sugo">Ha tudod, add meg, nagyjából hány van az ingatlanban – így pontosabb ajánlatot adunk.</p>
+              <div class="points">
+                <label class="point" for="dugalj"><span class="point__label">Dugalj</span><input class="field__input" id="dugalj" name="dugalj" type="number" min="0" max="999" step="1" inputmode="numeric"></label>
+                <label class="point" for="lampa"><span class="point__label">Lámpa</span><input class="field__input" id="lampa" name="lampa" type="number" min="0" max="999" step="1" inputmode="numeric"></label>
+                <label class="point" for="kapcsolo"><span class="point__label">Kapcsoló</span><input class="field__input" id="kapcsolo" name="kapcsolo" type="number" min="0" max="999" step="1" inputmode="numeric"></label>
+                <label class="point" for="eloszto"><span class="point__label">Elosztó</span><input class="field__input" id="eloszto" name="eloszto" type="number" min="0" max="99" step="1" inputmode="numeric"></label>
+              </div>
+              <p class="field__error" id="pontok-hiba"></p>
             </fieldset>
 
             <div class="form__row">

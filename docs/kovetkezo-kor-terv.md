@@ -32,3 +32,9 @@ A gyakori kérdések szekciót kérésre eltávolítottuk.
 - Beépítve: vállalások (felmérés és méretezés, mérnöki tervezés, engedélyeztetés, pályázat és finanszírozás, kivitelezés és garancia, beüzemelés és monitoring), működés négy lépésben, tájékoztató ár (5 kWp: 2,5–4 M Ft), kivitelezés 1–3 nap, teljes folyamat 2–6 hét, 48 órás személyre szabott rendszerterv kötelezettség nélkül.
 - Szándékosan kimaradt: az éves megtakarítás és a megtérülési idő számai. A forrásban ellentmondanak egymásnak (7–12 év és 8–12 év), és az elszámolási szabályok változása óta az új rendszereknél könnyen túlzónak bizonyulhatnak. Ezeket a személyre szabott rendszerterv tartalmazza.
 - Ellenőrizendő: a 2,5–4 M Ft bruttó (áfával) értendő-e.
+
+## Érintésvédelmi anyag (2026-10-13)
+- Beépítve: cél (veszélyes hibák feltárása, áramütés- és tűzkockázat csökkentése), amit kap az ügyfél (mérések, részletes jegyzőkönyv, javítási javaslatok, fotódokumentáció), mikor érdemes (új építés, átalakítás, időszakos ellenőrzés is), négylépéses menet (felmérés, mérés, kiértékelés, jegyzőkönyv), ár 20 000–60 000 Ft, időtartam 30–120 perc, díjmentes jegyzőkönyv-pontosítás hatósági észrevételnél.
+- Űrlap: opcionális mérési pontok (dugalj, lámpa, kapcsoló, elosztó), csak érintésvédelemnél vagy „mindkettő” esetén látszik és csak ekkor kerül elküldésre.
+- Szándékosan kimaradt: ipari felülvizsgálat (lakossági oldal), és a „néhány percen belüli ajánlat” ígérete (űrlap-feldolgozó és automatizmus nélkül nem tartható).
+- Ellenőrizendő: a 20 000–60 000 Ft bruttó (áfával) értendő-e.

@@ -430,6 +430,49 @@ await test('küldés közben a gomb letiltva, dupla kattintás egy kérést kül
   );
 });
 
+await test('mérési pontok: csak érintésvédelemnél látszanak, elküldjük őket, hibás értéket jeleznek', async () => {
+  await withEndpoint(
+    (route) => route.fulfill({ status: 200, body: '{}' }),
+    async (page, posts) => {
+      const visible = () => page.isVisible('#pontok-mezo');
+      assert(!(await visible()), 'szolgáltatás nélkül is látszik');
+      await page.check('input[value="napelem"]');
+      assert(!(await visible()), 'napelemnél is látszik');
+      await page.check('input[value="erintesvedelem"]');
+      assert(await visible(), 'érintésvédelemnél nem látszik');
+      await page.check('input[value="mindketto"]');
+      assert(await visible(), '„mindkettő” esetén nem látszik');
+      await page.fill('#dugalj', '-5');
+      await fill(page);
+      await page.click('.form__submit');
+      const err = await page.textContent('#pontok-hiba');
+      assert(/egész számmal/.test(err), `hibaüzenet: ${err}`);
+      assert((await page.getAttribute('#dugalj', 'aria-invalid')) === 'true', 'nincs aria-invalid');
+      assert(posts.length === 0, 'hibás értékkel is küldött');
+      await page.fill('#dugalj', '24');
+      await page.fill('#eloszto', '2');
+      await page.click('.form__submit');
+      await page.waitForSelector('#urlap-kesz:not([hidden])');
+      assert(posts.length === 1 && posts[0].includes('name="dugalj"') && posts[0].includes('24') && posts[0].includes('name="eloszto"'), 'a pontok nem kerültek a kérésbe');
+    },
+  );
+});
+
+await test('napelemnél a mérési pontok nem kerülnek a kérésbe', async () => {
+  await withEndpoint(
+    (route) => route.fulfill({ status: 200, body: '{}' }),
+    async (page, posts) => {
+      await page.check('input[value="erintesvedelem"]');
+      await page.fill('#lampa', '12');
+      await page.check('input[value="napelem"]');
+      await fill(page);
+      await page.click('.form__submit');
+      await page.waitForSelector('#urlap-kesz:not([hidden])');
+      assert(!posts[0].includes('name="lampa"'), 'elrejtett mező is elment');
+    },
+  );
+});
+
 console.log('\nGörgetéskövetés');
 await test('a gyakori kérdések szekció nincs az oldalon', async () => {
   const { page, context } = await open({ width: 1280, height: 800 });

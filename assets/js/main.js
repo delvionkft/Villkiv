@@ -81,6 +81,20 @@
     const submit = form.querySelector('.form__submit');
     const submitLabel = form.querySelector('.form__submit-label');
     const serviceSet = document.getElementById('szolgaltatas-mezo');
+    const pointsSet = document.getElementById('pontok-mezo');
+    const pointInputs = pointsSet ? [...pointsSet.querySelectorAll('input')] : [];
+    const POINT_NAMES = pointInputs.map((i) => i.name);
+    const pointInvalid = (i) => i.validity.badInput || (i.value !== '' && !/^\d{1,3}$/.test(i.value.trim())) ||
+      (i.value !== '' && Number(i.value) > Number(i.max));
+
+    // A mérési pontok csak érintésvédelemnél kellenek; elrejtve nem is küldjük el őket
+    const syncPoints = () => {
+      if (!pointsSet) return;
+      const v = form.querySelector('input[name="szolgaltatas"]:checked')?.value;
+      const show = v === 'erintesvedelem' || v === 'mindketto';
+      pointsSet.hidden = !show;
+      pointInputs.forEach((i) => { i.disabled = !show; });
+    };
     const MESSAGE_MAX = 1000;
     const TIMEOUT_MS = 15000;
 
@@ -105,7 +119,12 @@
       },
       telepules: (v) => (clean(v).length >= 2 ? '' : 'Add meg, melyik településen van az ingatlan.'),
       uzenet: (v) => (v.length <= MESSAGE_MAX ? '' : `Az üzenet legfeljebb ${MESSAGE_MAX} karakter lehet.`),
+      pontok: () =>
+        !pointsSet || pointsSet.hidden || !pointInputs.some(pointInvalid)
+          ? ''
+          : 'A darabszámot egész számmal add meg (dugalj, lámpa, kapcsoló: 0–999, elosztó: 0–99).',
     };
+    const valueOf = (name) => (name === 'szolgaltatas' || name === 'pontok' ? '' : form.elements[name].value);
 
     const LABELS = {
       szolgaltatas: 'Szolgáltatás',
@@ -114,6 +133,7 @@
       email: 'E-mail-cím',
       telepules: 'Ingatlan települése',
       uzenet: 'Rövid üzenet',
+      pontok: 'Mérési pontok',
     };
 
     const touched = new Set();
@@ -127,6 +147,11 @@
           if (message) r.setAttribute('aria-invalid', 'true');
           else r.removeAttribute('aria-invalid');
         });
+      } else if (name === 'pontok') {
+        pointInputs.forEach((i) => {
+          if (message && pointInvalid(i)) i.setAttribute('aria-invalid', 'true');
+          else i.removeAttribute('aria-invalid');
+        });
       } else {
         const input = form.elements[name];
         if (message) input.setAttribute('aria-invalid', 'true');
@@ -135,9 +160,7 @@
     };
 
     const validateField = (name) => {
-      const input = form.elements[name];
-      const value = name === 'szolgaltatas' ? '' : input.value;
-      const message = rules[name](value);
+      const message = rules[name](valueOf(name));
       showError(name, message);
       return message;
     };
@@ -153,14 +176,15 @@
         ...errors.map(({ name, message }) => {
           const li = document.createElement('li');
           const a = document.createElement('a');
-          a.href = name === 'szolgaltatas' ? '#szolgaltatas-mezo' : `#${name}`;
+          const first = name === 'pontok' ? pointInputs.find(pointInvalid) || pointInputs[0] : null;
+          a.href = name === 'szolgaltatas' ? '#szolgaltatas-mezo' : first ? `#${first.id}` : `#${name}`;
           a.textContent = `${LABELS[name]}: ${message}`;
           a.addEventListener('click', (e) => {
             e.preventDefault();
             const target =
               name === 'szolgaltatas'
                 ? form.querySelector('input[name="szolgaltatas"]')
-                : form.elements[name];
+                : first || form.elements[name];
             target.focus();
           });
           li.append(a);
@@ -172,22 +196,24 @@
 
     // Élő ellenőrzés: csak az után jelez, hogy a mezőt egyszer már elhagyták
     form.addEventListener('focusout', (e) => {
-      const name = e.target.name;
+      const name = POINT_NAMES.includes(e.target.name) ? 'pontok' : e.target.name;
       if (!rules[name] || name === 'szolgaltatas') return;
-      if (e.target.value !== '' || touched.has(name)) {
+      if (e.target.value !== '' || e.target.validity?.badInput || touched.has(name)) {
         touched.add(name);
         validateField(name);
       }
     });
     form.addEventListener('input', (e) => {
-      const name = e.target.name;
+      const name = POINT_NAMES.includes(e.target.name) ? 'pontok' : e.target.name;
       if (name === 'uzenet') updateCount();
       if (touched.has(name)) validateField(name);
       if (!summary.hidden) renderSummary(validateAllSilently());
     });
     form.addEventListener('change', (e) => {
       if (e.target.name === 'szolgaltatas') {
+        syncPoints();
         validateField('szolgaltatas');
+        if (touched.has('pontok')) validateField('pontok');
         if (!summary.hidden) renderSummary(validateAllSilently());
       }
     });
@@ -196,11 +222,12 @@
     function validateAllSilently() {
       return Object.keys(rules)
         .map((name) => {
-          const value = name === 'szolgaltatas' ? '' : form.elements[name].value;
-          return { name, message: rules[name](value) };
+          return { name, message: rules[name](valueOf(name)) };
         })
         .filter((r) => r.message);
     }
+
+    syncPoints();
 
     const counter = form.querySelector('[data-count-for="uzenet"]');
     function updateCount() {

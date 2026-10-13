@@ -649,6 +649,13 @@ main:focus { outline: none; }
   .ev__head { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(56px, 7vw, 104px); }
 }
 
+.ev__intro .scope { margin-top: -4px; }
+.scope.scope--light li { background: var(--surface); border-color: var(--border); color: var(--ink); }
+.scope.scope--light svg { color: var(--navy-900); }
+.stats.stats--light { margin: 0; grid-template-columns: 1fr 1fr; }
+.stats.stats--light .stat { background: var(--navy-900); border-color: var(--navy-900); }
+.stats.stats--light .stat__value { font-size: clamp(1.5rem, 1.2rem + 1vw, 2.125rem); }
+
 .when { margin-top: clamp(72px, 8vw, 112px); }
 .when .h3 { margin-bottom: 28px; }
 .when__grid { display: grid; gap: 12px; }
@@ -1079,6 +1086,12 @@ legend.field__label { margin-bottom: 10px; }
   box-shadow: inset 0 0 0 1px var(--navy-900);
 }
 .field--choice.is-invalid .choice { border-color: var(--error); }
+
+.field--points .field__hint { margin-top: -4px; }
+.points { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+@media (min-width: 560px) { .points { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.point { display: grid; gap: 6px; font-size: 0.875rem; font-weight: 550; color: var(--text); }
+.point .field__input { min-height: 46px; padding: 10px 12px; font-variant-numeric: tabular-nums; }
 
 .hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
 
