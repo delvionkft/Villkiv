@@ -19,6 +19,8 @@ export const IMAGES = {
   'hero-meres': { ratio: 4 / 3, widths: [320, 480, 640] },
   'ev-eloszto': { ratio: 3 / 2, widths: [640, 960, 1280] },
   'napelem-otthon': { ratio: 4 / 3, widths: [640, 960, 1280] },
+  'munka-1': { ratio: 4 / 3, widths: [480, 720, 960] },
+  'munka-2': { ratio: 4 / 3, widths: [480, 720, 960] },
 };
 
 const PHOTO_EXT = ['.jpg', '.jpeg', '.png', '.webp', '.avif', '.tif', '.tiff'];
@@ -26,7 +28,7 @@ const PHOTO_EXT = ['.jpg', '.jpeg', '.png', '.webp', '.avif', '.tif', '.tiff'];
 const files = await readdir(SRC);
 await mkdir(OUT, { recursive: true });
 
-for (const [name, { ratio, widths }] of Object.entries(IMAGES)) {
+for (const [name, { ratio, widths, position = 'centre' }] of Object.entries(IMAGES)) {
   // Sorrend: saját fotó (hero-haz.jpg) → demókép (hero-haz.demo.jpg) → SVG helyőrző
   const isPhoto = (f) => PHOTO_EXT.includes(path.extname(f).toLowerCase());
   const source =
@@ -48,7 +50,7 @@ for (const [name, { ratio, widths }] of Object.entries(IMAGES)) {
     const h = Math.round(w / ratio);
     const base = sharp(input, isSvg ? { density: 300 } : {})
       .rotate()
-      .resize(w, h, { fit: 'cover', position: 'centre' })
+      .resize(w, h, { fit: 'cover', position })
       .toColourspace('srgb');
     await base.clone().avif({ quality: 52, effort: 6 }).toFile(path.join(OUT, `${name}-${w}.avif`));
     await base.clone().webp({ quality: 74, effort: 6 }).toFile(path.join(OUT, `${name}-${w}.webp`));

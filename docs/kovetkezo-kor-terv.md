@@ -38,3 +38,7 @@ A gyakori kérdések szekciót kérésre eltávolítottuk.
 - Űrlap: opcionális mérési pontok (dugalj, lámpa, kapcsoló, elosztó), csak érintésvédelemnél vagy „mindkettő” esetén látszik és csak ekkor kerül elküldésre.
 - Szándékosan kimaradt: ipari felülvizsgálat (lakossági oldal), és a „néhány percen belüli ajánlat” ígérete (űrlap-feldolgozó és automatizmus nélkül nem tartható).
 - Ellenőrizendő: a 20 000–60 000 Ft bruttó (áfával) értendő-e.
+
+## Fotók (2026-10-13)
+- Beépítve 5 saját munkafotó: nyitókép (tetőablak melletti rendszer), részletkép (szerelés közben), napelemes szakasz (családi ház, a kamera-vízjel kivágva), és két kép a „Munkáinkból” sávban.
+- Hiányzik: érintésvédelmi fotó (elosztószekrény, mérés). Az érintésvédelmi szakaszban még helyőrző van.

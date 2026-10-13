@@ -968,6 +968,12 @@ html:not(.js) .timeline-wrap--dark .timeline__num { background: var(--yellow); b
 }
 .promise__text { font-size: 0.9375rem; line-height: 1.5; color: var(--muted); }
 
+/* Munkáinkból – valódi munkafotók */
+.work { margin-top: clamp(64px, 7vw, 96px); }
+.work__grid { display: grid; gap: 12px; }
+@media (min-width: 640px) { .work__grid { grid-template-columns: 1fr 1fr; gap: 16px; } }
+.media--work { aspect-ratio: 4 / 3; }
+
 /* --------------------------------------------------------------------------
    Ajánlatkérés
    -------------------------------------------------------------------------- */
