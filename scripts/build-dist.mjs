@@ -10,7 +10,7 @@ await rm(DIST, { recursive: true, force: true });
 await mkdir(path.join(DIST, 'assets'), { recursive: true });
 
 await cp(path.join(ROOT, 'index.html'), path.join(DIST, 'index.html'));
-await cp(path.join(ROOT, 'assets/favicon.svg'), path.join(DIST, 'assets/favicon.svg'));
+for (const f of ['favicon.png', 'apple-touch-icon.png']) await cp(path.join(ROOT, 'assets', f), path.join(DIST, 'assets', f));
 for (const dir of ['css', 'js', 'img']) {
   await cp(path.join(ROOT, 'assets', dir), path.join(DIST, 'assets', dir), { recursive: true });
 }

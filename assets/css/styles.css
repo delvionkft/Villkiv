@@ -291,6 +291,16 @@ main:focus { outline: none; }
   line-height: 1;
   color: var(--ink);
 }
+.brand__logo { display: block; height: 40px; width: auto; }
+@media (min-width: 960px) { .brand__logo { height: 44px; } }
+.brand--footer .brand__logo { height: 48px; }
+.site-footer__company {
+  font-family: var(--font-head);
+  font-weight: 650;
+  font-size: 1.125rem;
+  letter-spacing: -0.01em;
+  color: var(--on-dark);
+}
 .brand__sub { font-weight: 450; font-stretch: 100%; letter-spacing: 0; opacity: 0.75; margin-left: 2px; }
 .brand__mark {
   display: grid;
