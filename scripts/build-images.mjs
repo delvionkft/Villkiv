@@ -28,7 +28,11 @@ const PHOTO_EXT = ['.jpg', '.jpeg', '.png', '.webp', '.avif', '.tif', '.tiff'];
 const files = await readdir(SRC);
 await mkdir(OUT, { recursive: true });
 
+// Opcionális szűrés: npm run images -- hero-haz ev-eloszto
+const only = process.argv.slice(2);
+
 for (const [name, { ratio, widths, position = 'centre' }] of Object.entries(IMAGES)) {
+  if (only.length && !only.includes(name)) continue;
   // Sorrend: saját fotó (hero-haz.jpg) → demókép (hero-haz.demo.jpg) → SVG helyőrző
   const isPhoto = (f) => PHOTO_EXT.includes(path.extname(f).toLowerCase());
   const source =

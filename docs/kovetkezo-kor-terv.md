@@ -42,3 +42,4 @@ A gyakori kérdések szekciót kérésre eltávolítottuk.
 ## Fotók (2026-10-13)
 - Beépítve 5 saját munkafotó: nyitókép (tetőablak melletti rendszer), részletkép (szerelés közben), napelemes szakasz (családi ház, a kamera-vízjel kivágva), és két kép a „Munkáinkból” sávban.
 - Hiányzik: érintésvédelmi fotó (elosztószekrény, mérés). Az érintésvédelmi szakaszban még helyőrző van.
+- Érintésvédelmi szakasz: a feltöltött fotó (inverter, elosztódoboz, akkumulátor) vágott változata került be. Erősebb lenne egy nyitott elosztószekrény mérés közben, mérőműszerrel.
