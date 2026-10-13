@@ -32,6 +32,11 @@
     <symbol id="i-alert" viewBox="0 0 24 24"><path d="M10.3 4.2 2.6 17.5A2 2 0 0 0 4.3 20.5h15.4a2 2 0 0 0 1.7-3L13.7 4.2a2 2 0 0 0-3.4 0z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 9.5v4.5M12 17v.2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
     <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
     <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13.5 2 5 13.5h6L9.5 22 19 9.5h-6.2L13.5 2z" fill="currentColor"/></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M3.5 11 12 4l8.5 7M6 9.5V20h12V9.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="15" r="4.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m11.2 11.8 8.3-8.3M16.5 6.5l2.5 2.5M14 9l2 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-tools" viewBox="0 0 24 24"><path d="M14.5 5.5a4 4 0 0 0 4.9 4.9l-9 9a2.1 2.1 0 0 1-3-3l9-9a4 4 0 0 0-1.9-1.9z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M16 3.5a4 4 0 0 1 4.5 4.5l-2.5-.5-1.5-1.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+    <symbol id="i-tag" viewBox="0 0 24 24"><path d="M3.5 12.5V4.5h8l9 9-8 8-9-9z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="8" cy="9" r="1.6" fill="currentColor"/></symbol>
+    <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M9.6 9.6a2.5 2.5 0 1 1 3.4 2.3c-.6.3-1 .8-1 1.5v.4M12 16.8v.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
   </svg>
 
   <a class="skip-link" href="#tartalom">Ugrás a tartalomra</a>
@@ -70,14 +75,14 @@
         <div class="hero__text">
           <p class="pill"><span class="pill__dot" aria-hidden="true"></span>Családi házak és lakások · <span class="ph" data-placeholder>[Szolgáltatási terület]</span></p>
           <h1 class="hero__title" id="hero-cim">Biztonságosabb otthon. <span class="hero__title-em">Saját energiatermelés.</span></h1>
-          <p class="hero__lead">Érintésvédelmi felülvizsgálat és napelemes rendszerek lakossági ügyfeleknek. Válaszd ki, miben segíthetünk, és beszéljük át otthonod igényeit.</p>
+          <p class="hero__lead">Érintésvédelmi felülvizsgálat és napelemes rendszerek lakossági ügyfeleknek. Válaszd ki, miben segíthetünk.</p>
 
           <div class="chooser" role="group" aria-label="Válassz szolgáltatást">
             <a class="chooser__item" href="#erintesvedelem">
               <span class="chooser__icon" aria-hidden="true"><svg><use href="#i-shield"/></svg></span>
               <span class="chooser__body">
                 <span class="chooser__title">Érintésvédelem érdekel</span>
-                <span class="chooser__desc">A meglévő hálózat állapota és biztonsága</span>
+                <span class="chooser__desc">A hálózat állapota</span>
               </span>
               <svg class="chooser__arrow" aria-hidden="true"><use href="#i-down"/></svg>
             </a>
@@ -85,7 +90,7 @@
               <span class="chooser__icon" aria-hidden="true"><svg><use href="#i-sun"/></svg></span>
               <span class="chooser__body">
                 <span class="chooser__title">Napelemet szeretnék</span>
-                <span class="chooser__desc">Rendszer a tetődhöz és a fogyasztásodhoz</span>
+                <span class="chooser__desc">Rendszer a tetődre</span>
               </span>
               <svg class="chooser__arrow" aria-hidden="true"><use href="#i-down"/></svg>
             </a>
@@ -110,60 +115,52 @@
       </div>
     </section>
 
+    <!-- Sárga sáv: rövid, igaz állítások -->
+    <div class="band" aria-label="Röviden rólunk">
+      <ul class="wrap band__list">
+        <li><svg aria-hidden="true"><use href="#i-home"/></svg>Lakossági ügyfeleknek</li>
+        <li><svg aria-hidden="true"><use href="#i-shield"/></svg>Érintésvédelmi felülvizsgálat</li>
+        <li><svg aria-hidden="true"><use href="#i-sun"/></svg>Napelem a tervezéstől az ügyintézésig</li>
+        <li><svg aria-hidden="true"><use href="#i-pin"/></svg><span class="ph" data-placeholder>[Szolgáltatási terület]</span></li>
+      </ul>
+    </div>
+
     <!-- ============ 01 ÉRINTÉSVÉDELEM ============ -->
     <section class="section ev" id="erintesvedelem" aria-labelledby="ev-cim">
       <div class="wrap">
-        <div class="split">
-          <header class="split__aside" data-reveal>
-            <p class="eyebrow"><span class="eyebrow__icon" aria-hidden="true"><svg><use href="#i-shield"/></svg></span>Érintésvédelem és villamos biztonsági felülvizsgálat</p>
+        <div class="ev__head">
+          <header class="ev__intro" data-reveal>
+            <p class="eyebrow"><span class="eyebrow__num">01</span>Érintésvédelem</p>
             <h2 class="h2" id="ev-cim">Tudd meg, milyen állapotban van otthonod elektromos hálózata.</h2>
-            <p class="lead">A felülvizsgálat célja, hogy kiderüljön: a lakás vagy a ház elektromos rendszere biztonságosan működik-e, és van-e benne olyan hiányosság, amely áramütés- vagy tűzveszélyt jelenthet.</p>
+            <p class="lead">Átnézzük és bemérjük a hálózatot, és feltárjuk a biztonsági hiányosságokat.</p>
             <a class="btn btn--primary" href="#kapcsolat" data-service="erintesvedelem">
               Felülvizsgálatra kérek ajánlatot
               <svg class="btn__icon" aria-hidden="true"><use href="#i-arrow"/></svg>
             </a>
           </header>
+          <figure class="ev__photo" data-reveal>
+            <picture class="media media--wide">
+              <source type="image/avif" srcset="assets/img/ev-eloszto-640.avif 640w, assets/img/ev-eloszto-960.avif 960w, assets/img/ev-eloszto-1280.avif 1280w" sizes="(min-width: 1024px) 560px, 100vw">
+              <source type="image/webp" srcset="assets/img/ev-eloszto-640.webp 640w, assets/img/ev-eloszto-960.webp 960w, assets/img/ev-eloszto-1280.webp 1280w" sizes="(min-width: 1024px) 560px, 100vw">
+              <img src="assets/img/ev-eloszto-960.webp" width="1280" height="853" alt="Lakóház elosztószekrénye kismegszakítókkal és áram-védőkapcsolóval, mellette mérőműszer" loading="lazy" decoding="async">
+            </picture>
+            <figcaption class="ev__term">
+              <strong>Érintésvédelem:</strong> a védővezető, a fi-relé és a kismegszakítók hiba esetén időben lekapcsolnak, így nem ér áramütés.
+            </figcaption>
+          </figure>
+        </div>
 
-          <div class="split__main">
-            <figure class="media-block" data-reveal>
-              <picture class="media media--wide">
-                <source type="image/avif" srcset="assets/img/ev-eloszto-640.avif 640w, assets/img/ev-eloszto-960.avif 960w, assets/img/ev-eloszto-1280.avif 1280w" sizes="(min-width: 1024px) 680px, 100vw">
-                <source type="image/webp" srcset="assets/img/ev-eloszto-640.webp 640w, assets/img/ev-eloszto-960.webp 960w, assets/img/ev-eloszto-1280.webp 1280w" sizes="(min-width: 1024px) 680px, 100vw">
-                <img src="assets/img/ev-eloszto-960.webp" width="1280" height="853" alt="Lakóház elosztószekrénye kismegszakítókkal és áram-védőkapcsolóval, mellette mérőműszer" loading="lazy" decoding="async">
-              </picture>
-            </figure>
-
-            <div class="explain" data-reveal>
-              <h3 class="h4">Mit jelent az érintésvédelem?</h3>
-              <p>Ha egy készülék vagy vezeték meghibásodik, a fém burkolata feszültség alá kerülhet. Az érintésvédelem az a védelmi rendszer – védővezető, földelés, kismegszakítók és áram-védőkapcsoló (köznyelvben „fi-relé”) –, amely ilyenkor időben lekapcsol, hogy a hiba ne okozzon áramütést.</p>
-            </div>
-
-            <div data-reveal>
-              <h3 class="h3 block-title">Melyik helyzet ismerős?</h3>
-              <ul class="tiles">
-                <li class="tile">
-                  <p class="tile__title">Régebbi ingatlant vásároltál vagy örököltél.</p>
-                  <p class="tile__text">Nem tudod, mikor nyúltak utoljára a hálózathoz, és mi maradt meg az eredeti szerelésből.</p>
-                </li>
-                <li class="tile">
-                  <p class="tile__title">Felújítás előtt szeretnéd megismerni a hálózat állapotát.</p>
-                  <p class="tile__text">Burkolás és festés előtt érdemes tudni, milyen állapotban vannak a vezetékek és a védelmek.</p>
-                </li>
-                <li class="tile">
-                  <p class="tile__title">Eladás vagy bérbeadás miatt érdeklődsz.</p>
-                  <p class="tile__text">Tudni szeretnéd, mire számíts egy ingatlanhoz kapcsolódó felülvizsgálatnál.</p>
-                </li>
-                <li class="tile">
-                  <p class="tile__title">Bizonytalan vagy a meglévő rendszer biztonságában.</p>
-                  <p class="tile__text">Gyakran lekapcsol a biztosíték, melegszik egy konnektor, vagy nem tudod, mi van a falban.</p>
-                </li>
-              </ul>
-              <p class="note note--warn">
-                <svg class="note__icon" aria-hidden="true"><use href="#i-alert"/></svg>
-                <span><strong>Szikrázást, égett szagot vagy áramütést tapasztalsz?</strong> Kapcsold le az érintett áramkört, és ne használd, amíg szakember meg nem nézte.</span>
-              </p>
-              <p class="note">Hogy a te helyzetedben előírás-e a felülvizsgálat, az az ingatlantól és a céltól függ. Ha ebben bizonytalan vagy, írd meg az ajánlatkérésben, és az egyeztetéskor átbeszéljük.</p>
-            </div>
+        <div class="when" data-reveal>
+          <h3 class="h3">Mikor érdemes?</h3>
+          <ul class="when__grid">
+            <li class="when__item"><span class="when__icon" aria-hidden="true"><svg><use href="#i-key"/></svg></span>Régebbi ingatlant vettél vagy örököltél</li>
+            <li class="when__item"><span class="when__icon" aria-hidden="true"><svg><use href="#i-tools"/></svg></span>Felújítás előtt állsz</li>
+            <li class="when__item"><span class="when__icon" aria-hidden="true"><svg><use href="#i-tag"/></svg></span>Eladás vagy bérbeadás előtt</li>
+            <li class="when__item"><span class="when__icon" aria-hidden="true"><svg><use href="#i-help"/></svg></span>Bizonytalan vagy a hálózat biztonságában</li>
+          </ul>
+          <div class="when__notes">
+            <p class="note note--warn"><svg class="note__icon" aria-hidden="true"><use href="#i-alert"/></svg><span><strong>Szikrázás, égett szag, áramütés?</strong> Kapcsold le az áramkört, és ne használd.</span></p>
+            <p class="note">Kötelező-e nálad? Az ingatlantól és a céltól függ – az egyeztetéskor átbeszéljük.</p>
           </div>
         </div>
 
@@ -172,29 +169,29 @@
           <div class="timeline-wrap" data-timeline>
             <span class="timeline__track" aria-hidden="true"><span class="timeline__fill"></span><span class="timeline__spark"></span></span>
             <ol class="timeline timeline--3">
-            <li class="timeline__item">
-              <span class="timeline__num" aria-hidden="true">1</span>
-              <div class="timeline__body">
-                <h4 class="h4">Egyeztetés</h4>
-                <p>Megbeszéljük, milyen ingatlanról van szó, miért szeretnéd a felülvizsgálatot, és mikor tudunk kimenni.</p>
-              </div>
-            </li>
-            <li class="timeline__item">
-              <span class="timeline__num" aria-hidden="true">2</span>
-              <div class="timeline__body">
-                <h4 class="h4">Helyszíni vizsgálat és mérések</h4>
-                <p>Átnézzük az elosztót, a vezetékeket és a szerelvényeket, majd műszerrel mérjük a védelmek működését. Ehhez rövid időre áramtalanítani kell.</p>
-              </div>
-            </li>
-            <li class="timeline__item">
-              <span class="timeline__num" aria-hidden="true">3</span>
-              <div class="timeline__body">
-                <h4 class="h4">Eredmények és teendők</h4>
-                <!-- HELYŐRZŐ: a ténylegesen átadott dokumentáció (pl. minősítő irat, jegyzőkönyv) -->
-                <p>Elmondjuk, mit találtunk, mi sürgős és mi várhat. A vizsgálatról <span class="ph" data-placeholder>[átadott dokumentáció]</span> készül.</p>
-              </div>
-            </li>
-          </ol>
+              <li class="timeline__item">
+                <span class="timeline__num" aria-hidden="true">1</span>
+                <div class="timeline__body">
+                  <h4 class="h4">Egyeztetés</h4>
+                  <p>Megbeszéljük a részleteket és az időpontot.</p>
+                </div>
+              </li>
+              <li class="timeline__item">
+                <span class="timeline__num" aria-hidden="true">2</span>
+                <div class="timeline__body">
+                  <h4 class="h4">Vizsgálat és mérések</h4>
+                  <p>Helyszíni átvizsgálás, műszeres mérések.</p>
+                </div>
+              </li>
+              <li class="timeline__item">
+                <span class="timeline__num" aria-hidden="true">3</span>
+                <div class="timeline__body">
+                  <h4 class="h4">Eredmény és teendők</h4>
+                  <!-- HELYŐRZŐ: a ténylegesen átadott dokumentáció (pl. minősítő irat, jegyzőkönyv) -->
+                  <p>Megmutatjuk, mi a teendő. <span class="ph" data-placeholder>[Átadott dokumentáció]</span></p>
+                </div>
+              </li>
+            </ol>
           </div>
         </div>
       </div>
@@ -205,10 +202,14 @@
       <div class="wrap">
         <div class="pv__head">
           <div class="pv__intro" data-reveal>
-            <p class="eyebrow eyebrow--dark"><span class="eyebrow__icon" aria-hidden="true"><svg><use href="#i-sun"/></svg></span>Napelemes rendszerek</p>
+            <p class="eyebrow eyebrow--dark"><span class="eyebrow__num">02</span>Napelemes rendszerek</p>
             <h2 class="h2" id="pv-cim">Az otthonodhoz és a fogyasztásodhoz illő napelemes rendszer.</h2>
-            <p class="lead">Nincs két egyforma tető és két egyforma háztartás. Hogy milyen rendszer illik hozzád, ahhoz meg kell ismernünk az ingatlan adottságait, a jelenlegi fogyasztásodat és a következő évekre vonatkozó terveidet.</p>
-            <p class="pv__honest">Megtérülési időt és megtakarítást csak a te adataidból, számítással lehet becsülni, ezért ezekre nem mondunk előre számokat.</p>
+            <p class="lead">A jó rendszer az ingatlanodból, a fogyasztásodból és a terveidből indul.</p>
+            <ul class="scope" aria-label="Amit vállalunk">
+              <li><svg aria-hidden="true"><use href="#i-check"/></svg>Tervezés</li>
+              <li><svg aria-hidden="true"><use href="#i-check"/></svg>Kivitelezés</li>
+              <li><svg aria-hidden="true"><use href="#i-check"/></svg>Ügyintézés</li>
+            </ul>
           </div>
           <figure class="pv__photo" data-reveal>
             <picture class="media media--pv">
@@ -220,47 +221,37 @@
         </div>
 
         <div class="pv__questions" data-reveal>
-          <h3 class="h3 block-title">Ezeket érdemes átbeszélni</h3>
+          <h3 class="h3 block-title">Ezeket beszéljük át</h3>
           <ol class="qgrid">
             <li class="qcard">
               <span class="qcard__num" aria-hidden="true">01</span>
-              <p class="qcard__q">Mennyi áramot használ a háztartás?</p>
-              <p class="qcard__a">Az elmúlt egy év villanyszámláiból kiderül az éves fogyasztás, és az is, mikor használod a legtöbb áramot. Ebből indul a méretezés.</p>
+              <p class="qcard__q">Mennyi áramot használsz?</p>
+              <p class="qcard__a">Az éves villanyszámla a kiindulópont.</p>
             </li>
             <li class="qcard">
               <span class="qcard__num" aria-hidden="true">02</span>
-              <p class="qcard__q">Milyen adottságai vannak a tetőnek?</p>
-              <p class="qcard__a">Számít a tájolás, a dőlésszög, a szabad felület, az árnyékolás, valamint a tetőszerkezet és a héjazat állapota.</p>
+              <p class="qcard__q">Milyen a tetőd?</p>
+              <p class="qcard__a">Tájolás, dőlésszög, árnyék, állapot.</p>
             </li>
             <li class="qcard">
               <span class="qcard__num" aria-hidden="true">03</span>
-              <p class="qcard__q">Várható-e új fogyasztó, például klíma vagy autótöltő?</p>
-              <p class="qcard__a">Egy klíma, hőszivattyú vagy autótöltő jelentősen növelheti a fogyasztást. Ha tudod, hogy jön, érdemes már most számolni vele.</p>
+              <p class="qcard__q">Jön új fogyasztó?</p>
+              <p class="qcard__a">Klíma, hőszivattyú, autótöltő.</p>
             </li>
             <li class="qcard">
               <span class="qcard__num" aria-hidden="true">04</span>
-              <p class="qcard__q">Milyen rendszer illeszkedhet ezekhez?</p>
-              <p class="qcard__a">A válasz a fenti adatoktól és az aktuális elszámolási szabályoktól függ. Az ajánlatban leírjuk, mit javaslunk, és miért.</p>
+              <p class="qcard__q">Melyik rendszer illik hozzád?</p>
+              <p class="qcard__a">Ezt írjuk le az ajánlatban.</p>
             </li>
           </ol>
         </div>
 
-        <div class="pv__bottom" data-reveal>
-          <div class="pv__scope">
-            <h3 class="h4">Amit a napelemes munkából vállalunk</h3>
-            <ul class="checks">
-              <li><svg aria-hidden="true"><use href="#i-check"/></svg><span>Rendszertervezés a fogyasztásod és a tető adottságai alapján</span></li>
-              <li><svg aria-hidden="true"><use href="#i-check"/></svg><span>Kivitelezés és telepítés</span></li>
-              <li><svg aria-hidden="true"><use href="#i-check"/></svg><span>Ügyintézés az áramszolgáltatónál</span></li>
-            </ul>
-          </div>
-          <div class="pv__cta">
-            <p>Régebbi ingatlannál a napelem előtt érdemes a meglévő hálózatot is átnézetni. Az ajánlatkérésben jelölheted, hogy mindkét szolgáltatás érdekel.</p>
-            <a class="btn btn--primary" href="#kapcsolat" data-service="napelem">
-              Napelemes rendszerre kérek ajánlatot
-              <svg class="btn__icon" aria-hidden="true"><use href="#i-arrow"/></svg>
-            </a>
-          </div>
+        <div class="pv__cta" data-reveal>
+          <p>Megtérülést csak számítás után mondunk, előre nem ígérünk számokat. Régebbi ház? Jelöld, hogy mindkét szolgáltatás érdekel.</p>
+          <a class="btn btn--primary" href="#kapcsolat" data-service="napelem">
+            Napelemes rendszerre kérek ajánlatot
+            <svg class="btn__icon" aria-hidden="true"><use href="#i-arrow"/></svg>
+          </a>
         </div>
       </div>
     </section>
@@ -269,43 +260,42 @@
     <section class="section process" id="menete" aria-labelledby="menete-cim">
       <div class="wrap">
         <header class="section-head" data-reveal>
-          <p class="eyebrow">A munka menete</p>
-          <h2 class="h2" id="menete-cim">Az ajánlatkéréstől a munka megkezdéséig.</h2>
-          <p class="section-head__text">Mindkét szolgáltatásnál ugyanígy indulunk, és minden lépésnél tudod, mi következik.</p>
+          <p class="eyebrow"><span class="eyebrow__num">03</span>A munka menete</p>
+          <h2 class="h2" id="menete-cim">Négy lépés a munka kezdetéig.</h2>
         </header>
 
         <div class="timeline-wrap" data-timeline data-reveal>
           <span class="timeline__track" aria-hidden="true"><span class="timeline__fill"></span><span class="timeline__spark"></span></span>
           <ol class="timeline timeline--4">
-          <li class="timeline__item">
-            <span class="timeline__num" aria-hidden="true">1</span>
-            <div class="timeline__body">
-              <h3 class="h4">Megírod, melyik szolgáltatás érdekel.</h3>
-              <p>Kiválasztod a szolgáltatást, és megadod, hol van az ingatlan. Egy-két mondat a helyzetről sokat segít.</p>
-            </div>
-          </li>
-          <li class="timeline__item">
-            <span class="timeline__num" aria-hidden="true">2</span>
-            <div class="timeline__body">
-              <h3 class="h4">Egyeztetjük az ingatlan adatait és az igényeidet.</h3>
-              <p>Pontosítjuk, mire van szükség. Napelemnél ekkor kérjük el a fogyasztási adatokat és néhány fotót.</p>
-            </div>
-          </li>
-          <li class="timeline__item">
-            <span class="timeline__num" aria-hidden="true">3</span>
-            <div class="timeline__body">
-              <h3 class="h4">Meghatározzuk a szükséges következő lépéseket.</h3>
-              <p>Elmondjuk, kell-e helyszíni bejárás, mi kerül bele az ajánlatba, és mire számíthatsz.</p>
-            </div>
-          </li>
-          <li class="timeline__item">
-            <span class="timeline__num" aria-hidden="true">4</span>
-            <div class="timeline__body">
-              <h3 class="h4">Az egyeztetett feltételek alapján megkezdődik a munka.</h3>
-              <p>A munka akkor indul, amikor a tartalmában, az árában és az időpontjában megállapodtunk.</p>
-            </div>
-          </li>
-        </ol>
+            <li class="timeline__item">
+              <span class="timeline__num" aria-hidden="true">1</span>
+              <div class="timeline__body">
+                <h3 class="h4">Megírod, mi érdekel</h3>
+                <p>Szolgáltatás és település.</p>
+              </div>
+            </li>
+            <li class="timeline__item">
+              <span class="timeline__num" aria-hidden="true">2</span>
+              <div class="timeline__body">
+                <h3 class="h4">Egyeztetünk</h3>
+                <p>Az ingatlan adatai és az igényeid.</p>
+              </div>
+            </li>
+            <li class="timeline__item">
+              <span class="timeline__num" aria-hidden="true">3</span>
+              <div class="timeline__body">
+                <h3 class="h4">Meghatározzuk a lépéseket</h3>
+                <p>Bejárás, ajánlat, feltételek.</p>
+              </div>
+            </li>
+            <li class="timeline__item">
+              <span class="timeline__num" aria-hidden="true">4</span>
+              <div class="timeline__body">
+                <h3 class="h4">Indul a munka</h3>
+                <p>Az egyeztetett feltételek szerint.</p>
+              </div>
+            </li>
+          </ol>
         </div>
       </div>
     </section>
@@ -329,7 +319,7 @@
               <!-- <picture>…valódi munkafotó…</picture> -->
               <p class="ref__meta">[Szolgáltatás] · [Település] · [Év]</p>
               <h3 class="h4">[Milyen feladatot oldottunk meg?]</h3>
-              <p>[Rövid leírás: kiinduló helyzet, elvégzett munka, eredmény]</p>
+              <p>[Rövid leírás]</p>
             </li>
           </ul>
           <dl class="refs__creds">
@@ -343,20 +333,16 @@
     <section class="section contact" id="kapcsolat" aria-labelledby="kapcsolat-cim">
       <div class="wrap contact__grid">
         <div class="contact__info" data-reveal>
-          <p class="eyebrow eyebrow--dark">Ajánlatkérés</p>
+          <p class="eyebrow eyebrow--dark"><span class="eyebrow__num">04</span>Ajánlatkérés</p>
           <h2 class="h2" id="kapcsolat-cim">Miben segíthetünk otthonodnál?</h2>
-          <p class="lead">Válaszd ki a szolgáltatást, és add meg, hogyan érhetünk el. Az üzeneted alapján felvesszük veled a kapcsolatot, és egyeztetjük a részleteket.</p>
+          <p class="lead">Válaszd ki a szolgáltatást, és felvesszük veled a kapcsolatot.</p>
 
-          <div class="contact__direct">
-            <p class="contact__direct-title">Inkább közvetlenül keresnél?</p>
-            <!-- HELYŐRZŐ: valós elérhetőségek. A href-et is írd át (tel:+36…, mailto:…). -->
-            <ul class="contact__list">
-              <li><span class="contact__icon" aria-hidden="true"><svg><use href="#i-phone"/></svg></span><span><span class="contact__k">Telefon</span><a href="tel:" class="ph" data-placeholder>[Telefonszám]</a></span></li>
-              <li><span class="contact__icon" aria-hidden="true"><svg><use href="#i-mail"/></svg></span><span><span class="contact__k">E-mail</span><a href="mailto:" class="ph" data-placeholder>[E-mail-cím]</a></span></li>
-              <li><span class="contact__icon" aria-hidden="true"><svg><use href="#i-pin"/></svg></span><span><span class="contact__k">Szolgáltatási terület</span><span class="ph" data-placeholder>[Települések, megye]</span></span></li>
-              <li><span class="contact__icon" aria-hidden="true"><svg><use href="#i-clock"/></svg></span><span><span class="contact__k">Telefonos elérhetőség</span><span class="ph" data-placeholder>[Napok, időszak]</span></span></li>
-            </ul>
-          </div>
+          <!-- HELYŐRZŐ: valós elérhetőségek. A href-et is írd át (tel:+36…, mailto:…). -->
+          <ul class="contact__list">
+            <li><span class="contact__icon" aria-hidden="true"><svg><use href="#i-phone"/></svg></span><span><span class="contact__k">Telefon</span><a href="tel:" class="ph" data-placeholder>[Telefonszám]</a></span></li>
+            <li><span class="contact__icon" aria-hidden="true"><svg><use href="#i-mail"/></svg></span><span><span class="contact__k">E-mail</span><a href="mailto:" class="ph" data-placeholder>[E-mail-cím]</a></span></li>
+            <li><span class="contact__icon" aria-hidden="true"><svg><use href="#i-pin"/></svg></span><span><span class="contact__k">Terület</span><span class="ph" data-placeholder>[Települések, megye]</span></span></li>
+          </ul>
         </div>
 
         <div class="contact__form">
@@ -418,8 +404,8 @@
 
             <div class="field">
               <label class="field__label" for="uzenet">Rövid üzenet <span class="field__opt">(nem kötelező)</span></label>
-              <textarea class="field__input field__input--area" id="uzenet" name="uzenet" rows="4" maxlength="1000" aria-describedby="uzenet-pelda uzenet-hiba"></textarea>
-              <p class="field__hint" id="uzenet-pelda"><span>Például az ingatlan kora, a felújítás tervezett ideje, napelemnél az éves fogyasztás.</span> <span class="field__count" data-count-for="uzenet" aria-hidden="true">0 / 1000</span></p>
+              <textarea class="field__input field__input--area" id="uzenet" name="uzenet" rows="3" maxlength="1000" aria-describedby="uzenet-pelda uzenet-hiba"></textarea>
+              <p class="field__hint" id="uzenet-pelda"><span>Pl. az ingatlan kora vagy az éves fogyasztás.</span> <span class="field__count" data-count-for="uzenet" aria-hidden="true">0 / 1000</span></p>
               <p class="field__error" id="uzenet-hiba"></p>
             </div>
 
@@ -435,7 +421,7 @@
                 <span class="form__submit-label">Ajánlatot kérek</span>
                 <svg class="btn__icon" aria-hidden="true"><use href="#i-arrow"/></svg>
               </button>
-              <p class="form__legal"><span class="req" aria-hidden="true">*</span> Kötelező mező. Az adataidat kizárólag az ajánlatkérés megválaszolásához használjuk. Részletek: <a href="#" class="ph" data-placeholder>[Adatkezelési tájékoztató]</a>.</p>
+              <p class="form__legal"><span class="req" aria-hidden="true">*</span> Kötelező mező. Adatkezelés: <a href="#" class="ph" data-placeholder>[Adatkezelési tájékoztató]</a></p>
             </div>
 
             <div class="form__status" role="status" aria-live="polite"></div>
@@ -444,7 +430,7 @@
           <div class="form-done" id="urlap-kesz" tabindex="-1" hidden>
             <span class="form-done__icon" aria-hidden="true"><svg><use href="#i-check"/></svg></span>
             <h3 class="h3">Megkaptuk az ajánlatkérésedet.</h3>
-            <p>Köszönjük! A megadott elérhetőségeiden keresünk, hogy egyeztessük a részleteket.</p>
+            <p>Köszönjük! A megadott elérhetőségeiden keresünk az egyeztetéshez.</p>
           </div>
         </div>
       </div>
