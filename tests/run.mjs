@@ -484,11 +484,11 @@ for (const [width, height] of [[1440, 900], [390, 844]]) {
       on: [...w.querySelectorAll('.timeline__item')].map((i) => i.classList.contains('is-on')),
     })));
     let s = await state();
-    assert(s.length === 2 && s.every((t) => t.ready), 'a vezeték nem készült el');
+    assert(s.length === 3 && s.every((t) => t.ready), `a vezeték nem készült el (${s.length})`);
     assert(s.every((t) => t.p === 0 && t.on.every((x) => !x)), `betöltéskor már töltve: ${JSON.stringify(s)}`);
     // Végiggörgetés kis lépésekben: a kitöltés sosem csökken, a felkapcsolt lépések mindig elöl vannak
     const max = await page.evaluate(() => document.documentElement.scrollHeight - innerHeight);
-    const prev = [0, 0];
+    const prev = s.map(() => 0);
     let sawPartial = false;
     for (let y = 0; y <= max; y += 120) {
       await page.evaluate((top) => window.scrollTo({ top, behavior: 'instant' }), y);

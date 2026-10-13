@@ -27,3 +27,8 @@ A gyakori kérdések szekciót kérésre eltávolítottuk.
 - Beépítve: VILLKIV Mérnökiroda Kft., csapat (villamosmérnökök, regisztrált villanyszerelők, villamos biztonsági felülvizsgálók), vállalások (egyedi felmérés, dokumentált átadás, legalább 2 év garancia, felelősségbiztosítás, ügyintézési jogosultság), 48 órás kapcsolatfelvétel, helyszíni felmérés utáni tételes ajánlat, telefon és e-mail.
 - Szándékosan kimaradt: az új családi ház villanyszerelésének árai és határideje, valamint az ipari ügyfelek. Ez az oldal a két lakossági szolgáltatásra szól; az ár a nem itt tárgyalt szolgáltatásról szólna, és összezavarná a látogatót.
 - Még hiányzik: székhely, adószám, nyilvántartási szám, adatkezelési tájékoztató, impresszum, logó, űrlap-feldolgozó, fotók.
+
+## Napelemes anyag (2026-10-13)
+- Beépítve: vállalások (felmérés és méretezés, mérnöki tervezés, engedélyeztetés, pályázat és finanszírozás, kivitelezés és garancia, beüzemelés és monitoring), működés négy lépésben, tájékoztató ár (5 kWp: 2,5–4 M Ft), kivitelezés 1–3 nap, teljes folyamat 2–6 hét, 48 órás személyre szabott rendszerterv kötelezettség nélkül.
+- Szándékosan kimaradt: az éves megtakarítás és a megtérülési idő számai. A forrásban ellentmondanak egymásnak (7–12 év és 8–12 év), és az elszámolási szabályok változása óta az új rendszereknél könnyen túlzónak bizonyulhatnak. Ezeket a személyre szabott rendszerterv tartalmazza.
+- Ellenőrizendő: a 2,5–4 M Ft bruttó (áfával) értendő-e.
