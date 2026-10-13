@@ -473,6 +473,52 @@ await test('napelemnél a mérési pontok nem kerülnek a kérésbe', async () =
   );
 });
 
+async function onFakeHost(host, onPost) {
+  const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  await context.route(`https://${host}/**`, async (route) => {
+    const req = route.request();
+    if (req.method() === 'POST') return onPost(route, req);
+    const path = new URL(req.url()).pathname.replace(/^\//, '');
+    const response = await route.fetch({ url: BASE + path });
+    return route.fulfill({ response });
+  });
+  const page = await context.newPage();
+  await page.goto(`https://${host}/`, { waitUntil: 'networkidle' });
+  return { page, context };
+}
+
+await test('Netlify-tárhelyen a Netlify Forms fogadja a beküldést (form-name, urlencoded)', async () => {
+  const posts = [];
+  const { page, context } = await onFakeHost('villkiv-teszt.netlify.app', (route, req) => {
+    posts.push({ url: req.url(), body: req.postData() || '', type: req.headers()['content-type'] || '' });
+    return route.fulfill({ status: 200, contentType: 'text/html', body: '<p>ok</p>' });
+  });
+  await page.check('input[value="napelem"]');
+  await fill(page);
+  await page.click('.form__submit');
+  await page.waitForSelector('#urlap-kesz:not([hidden])');
+  assert(posts.length === 1, `kérések: ${posts.length}`);
+  const p = posts[0];
+  assert(new URL(p.url).pathname === '/', `végpont: ${p.url}`);
+  assert(p.type.includes('application/x-www-form-urlencoded'), `típus: ${p.type}`);
+  const q = new URLSearchParams(p.body);
+  assert(q.get('form-name') === 'ajanlatkeres' && q.get('szolgaltatas') === 'napelem' && q.get('nev') === 'Teszt Elek', `törzs: ${p.body}`);
+  await context.close();
+});
+
+await test('ismeretlen tárhelyen a Netlify-mód nem kapcsol be, nincs hamis siker', async () => {
+  let posted = 0;
+  const { page, context } = await onFakeHost('pelda-tarhely.hu', (route) => {
+    posted++;
+    return route.fulfill({ status: 200, body: 'ok' });
+  });
+  await fill(page);
+  await page.click('.form__submit');
+  const status = await page.textContent('.form__status');
+  assert(/nincs bekötve/.test(status) && posted === 0 && (await page.isHidden('#urlap-kesz')), `állapot: ${status}, kérések: ${posted}`);
+  await context.close();
+});
+
 console.log('\nGörgetéskövetés');
 await test('a gyakori kérdések szekció nincs az oldalon', async () => {
   const { page, context } = await open({ width: 1280, height: 800 });

@@ -45,6 +45,19 @@ Az `index.html`-ben a `<form id="ajanlat-urlap" action="">` `action` attribútum
 - **Sikeres állapot csak 2xx válasz után jelenik meg.** Nem 2xx válasz, hálózati hiba vagy 15 mp-es időtúllépés esetén hibaüzenet jelenik meg, és a beírt adatok megmaradnak.
 - A szolgáltatások CTA-gombjai előválasztják a szolgáltatást. Hirdetésből is előválaszthatsz, például: `/?szolgaltatas=napelem#kapcsolat`.
 
+## Közzététel Netlify Drop-pal
+
+```bash
+npm run build      # dist/ mappa: csak a weboldalhoz szükséges fájlok
+```
+
+A `dist` mappát (vagy a belőle készült zip-et) húzd be ide: https://app.netlify.com/drop
+
+**Ajánlatkérő űrlap:** Netlify-tárhelyen a beépített Netlify Forms fogadja a beküldéseket (`data-netlify="true"`, `form-name=ajanlatkeres`).
+- Az első telepítés után a Netlify felületén: *Site configuration → Forms*. Engedélyezd az űrlapfelismerést, ha kéri, majd telepítsd újra (húzd be újra a mappát).
+- E-mail értesítés: *Forms → Form notifications → Email notification* → `mernok@villkiv.hu`.
+- Saját domainnél vedd fel a domaint a `<form>` elem `data-netlify-hosts` attribútumába. Most: `netlify.app villkiv.hu`. Más tárhelyen a Netlify-mód biztonsági okból nem kapcsol be: ott az űrlap hibát jelez, és nem mutat hamis sikert.
+
 ## Referenciák
 
 A referencia- és jogosultságblokk **szándékosan nincs a publikus oldalon**, mert nincs még ellenőrizhető adat. A sablon az `index.html`-ben, a `<template id="referenciak-sablon">` elemben van. Csak valódi munkafotókkal, hozzájárulással közölt véleményekkel és tényleges jogosultsági adatokkal aktiváld.

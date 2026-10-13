@@ -14,7 +14,7 @@ lines.forEach((line, i) => {
   for (const m of line.matchAll(/\[[^\]\n]{2,}\]/g)) found.add(m[0]);
   if (/data-placeholder/.test(line) && found.size === 0) found.add('data-placeholder');
   if (/href="(tel:|mailto:|#)"/.test(line)) found.add('üres hivatkozás (tel:/mailto:/#)');
-  if (/action=""/.test(line)) found.add('űrlap-végpont (form action) nincs megadva');
+  if (/action=""/.test(line) && !/data-netlify="true"/.test(line)) found.add('űrlap-végpont (form action) nincs megadva');
   if (found.size) hits.push(`${String(i + 1).padStart(4)}: ${[...found].join(' | ')}`);
 });
 

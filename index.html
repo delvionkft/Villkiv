@@ -464,11 +464,13 @@
 
         <div class="contact__form">
           <!--
-            ŰRLAP BEKÖTÉSE: az action attribútumba a feldolgozó végpont teljes URL-je kerül
-            (pl. Formspree / Getform / saját szerveroldali végpont). Amíg üres, az űrlap
-            hibaüzenetet ad, és SOHA nem mutat sikeres visszajelzést.
+            ŰRLAP BEKÖTÉSE
+            - Netlify-tárhelyen (*.netlify.app és a data-netlify-hosts-ban felsorolt domainek)
+              a Netlify Forms fogadja a beküldést. Saját domainnél vedd fel a domaint a listába.
+            - Más tárhelyen az action attribútumba kell a feldolgozó végpont URL-je
+              (pl. Formspree). Végpont nélkül az űrlap hibát jelez, és SOHA nem mutat sikert.
           -->
-          <form class="form" id="ajanlat-urlap" action="" method="post" novalidate>
+          <form class="form" id="ajanlat-urlap" name="ajanlatkeres" action="" method="post" novalidate data-netlify="true" data-netlify-hosts="netlify.app villkiv.hu" netlify-honeypot="_gotcha">
             <div class="form__summary" id="urlap-hibak" tabindex="-1" hidden>
               <p class="form__summary-title">Néhány mezőt még ki kell javítani:</p>
               <ul></ul>
@@ -543,6 +545,7 @@
               <label for="weboldal">Ezt a mezőt hagyd üresen</label>
               <input id="weboldal" name="_gotcha" type="text" tabindex="-1" autocomplete="off">
             </div>
+            <input type="hidden" name="form-name" value="ajanlatkeres">
             <input type="hidden" name="_subject" value="Új ajánlatkérés a weboldalról">
 
             <div class="form__actions">

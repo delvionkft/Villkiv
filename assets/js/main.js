@@ -235,9 +235,18 @@
     }
     updateCount();
 
+    // Végpont: 1) az action attribútumban megadott URL, vagy
+    // 2) Netlify Forms – de csak Netlify-tárhelyen (data-netlify-hosts), mert máshol
+    //    a „/”-re küldött POST is 200-at adhat, ami hamis sikert jelezne.
     const endpoint = () => {
       const action = (form.getAttribute('action') || '').trim();
-      return /^(https?:\/\/|\/)/.test(action) ? action : '';
+      if (/^(https?:\/\/|\/)/.test(action)) return { url: action, netlify: false };
+      if (form.dataset.netlify === 'true') {
+        const hosts = (form.dataset.netlifyHosts || 'netlify.app').split(/\s+/).filter(Boolean);
+        const host = location.hostname;
+        if (hosts.some((h) => host === h || host.endsWith(`.${h}`))) return { url: '/', netlify: true };
+      }
+      return null;
     };
 
     const setSending = (sending) => {
@@ -270,13 +279,13 @@
         return;
       }
 
-      const url = endpoint();
-      if (!url) {
+      const target = endpoint();
+      if (!target) {
         showFailure('Az űrlap még nincs bekötve, ezért most nem tud üzenetet továbbítani.');
         return;
       }
 
-      // A _gotcha spamcsapda mezőt a szerveroldal értékeli ki (pl. Formspree).
+      // A _gotcha spamcsapda mezőt a szerveroldal értékeli ki (Netlify, Formspree).
 
       setSending(true);
       status.className = 'form__status is-sending';
@@ -288,12 +297,19 @@
       try {
         const data = new FormData(form);
         ['nev', 'telefon', 'email', 'telepules', 'uzenet'].forEach((k) => data.set(k, String(data.get(k) || '').trim()));
-        const response = await fetch(url, {
-          method: 'POST',
-          body: data,
-          headers: { Accept: 'application/json' },
-          signal: controller.signal,
-        });
+        const response = await fetch(target.url, target.netlify
+          ? {
+              method: 'POST',
+              body: new URLSearchParams(data).toString(),
+              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+              signal: controller.signal,
+            }
+          : {
+              method: 'POST',
+              body: data,
+              headers: { Accept: 'application/json' },
+              signal: controller.signal,
+            });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
         // Csak igazolt továbbítás után jelzünk sikert
