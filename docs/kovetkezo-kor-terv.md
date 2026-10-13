@@ -22,3 +22,8 @@ A gyakori kérdések szekciót kérésre eltávolítottuk.
    - ev-eloszto – https://www.canva.com/M/MAHXOzZUsow (MAHXOzZUsow)
    - napelem-otthon – https://www.canva.com/M/MAHXOydcYWg (MAHXOydcYWg)
 3. Cégadatok, elérhetőségek és az átadott dokumentáció megnevezése: `npm run check:placeholders` kilistázza, mi hiányzik.
+
+## Cégadatok (2026-10-13)
+- Beépítve: VILLKIV Mérnökiroda Kft., csapat (villamosmérnökök, regisztrált villanyszerelők, villamos biztonsági felülvizsgálók), vállalások (egyedi felmérés, dokumentált átadás, legalább 2 év garancia, felelősségbiztosítás, ügyintézési jogosultság), 48 órás kapcsolatfelvétel, helyszíni felmérés utáni tételes ajánlat, telefon és e-mail.
+- Szándékosan kimaradt: az új családi ház villanyszerelésének árai és határideje, valamint az ipari ügyfelek. Ez az oldal a két lakossági szolgáltatásra szól; az ár a nem itt tárgyalt szolgáltatásról szólna, és összezavarná a látogatót.
+- Még hiányzik: székhely, adószám, nyilvántartási szám, adatkezelési tájékoztató, impresszum, logó, űrlap-feldolgozó, fotók.

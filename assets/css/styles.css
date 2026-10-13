@@ -291,6 +291,7 @@ main:focus { outline: none; }
   line-height: 1;
   color: var(--ink);
 }
+.brand__sub { font-weight: 450; font-stretch: 100%; letter-spacing: 0; opacity: 0.75; margin-left: 2px; }
 .brand__mark {
   display: grid;
   place-items: center;
@@ -881,6 +882,68 @@ html:not(.js) .timeline__num {
 .process { background: var(--surface); }
 
 /* --------------------------------------------------------------------------
+   Rólunk – csapat és vállalások
+   -------------------------------------------------------------------------- */
+.trust__grid { display: grid; gap: 48px; align-items: start; }
+@media (min-width: 1024px) {
+  .trust__grid { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(56px, 7vw, 104px); }
+}
+.trust__head { display: grid; gap: 28px; justify-items: start; }
+.trust__head .eyebrow { margin-bottom: -4px; }
+.team { display: grid; gap: 10px; width: 100%; }
+.team li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-head);
+  font-weight: 630;
+  font-size: 1.125rem;
+  color: var(--ink);
+}
+.team li::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--yellow);
+  box-shadow: 0 0 0 3px var(--navy-900);
+}
+.trust__grid > * { min-width: 0; }
+.promises { display: grid; gap: 12px; }
+@media (min-width: 420px) { .promises { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 640px) { .promises { gap: 16px; } }
+.promise {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  padding: clamp(18px, 2.5vw, 28px);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+}
+.promise__icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 10px;
+  border-radius: var(--r-sm);
+  background: var(--navy-900);
+  color: var(--yellow);
+}
+.promise__icon svg { width: 24px; height: 24px; }
+.promise__title {
+  font-family: var(--font-head);
+  font-weight: 640;
+  font-size: clamp(1.0625rem, 1rem + 0.3vw, 1.25rem);
+  line-height: 1.25;
+  color: var(--ink);
+}
+.promise__text { font-size: 0.9375rem; line-height: 1.5; color: var(--muted); }
+
+/* --------------------------------------------------------------------------
    Ajánlatkérés
    -------------------------------------------------------------------------- */
 .contact { background: var(--navy-900); color: var(--on-dark-muted); }
@@ -908,7 +971,9 @@ html:not(.js) .timeline__num {
 }
 .contact__icon svg { width: 20px; height: 20px; }
 .contact__k { font-size: 0.8125rem; color: var(--on-dark-muted); }
-.contact__list a { font-weight: 600; color: var(--on-dark); justify-self: start; }
+.contact__list a { font-weight: 650; font-size: 1.125rem; color: var(--on-dark); justify-self: start; text-decoration: none; }
+.contact__list a:hover { color: var(--yellow); }
+.contact__more { font-size: 0.9375rem; color: var(--on-dark-muted); max-width: 44ch; }
 
 .contact__form {
   min-width: 0;
