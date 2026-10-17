@@ -75,7 +75,6 @@
      Űrlap: ellenőrzés és beküldés
      --------------------------------------------------------------------- */
   if (form) {
-    const done = document.getElementById('urlap-kesz');
     const summary = document.getElementById('urlap-hibak');
     const status = form.querySelector('.form__status');
     const submit = form.querySelector('.form__submit');
@@ -235,12 +234,13 @@
     }
     updateCount();
 
-    // Végpont: 1) az action attribútumban megadott URL, vagy
+    // Végpont: 1) az action attribútumban megadott teljes (https://…) URL, pl. Formspree, vagy
     // 2) Netlify Forms – de csak Netlify-tárhelyen (data-netlify-hosts), mert máshol
-    //    a „/”-re küldött POST is 200-at adhat, ami hamis sikert jelezne.
+    //    egy POST-ra adott 200-as válasz is hamis sikert jelezne.
+    // A relatív action (/koszonjuk) a JS nélküli Netlify-beküldés köszönőoldala, nem végpont.
     const endpoint = () => {
       const action = (form.getAttribute('action') || '').trim();
-      if (/^(https?:\/\/|\/)/.test(action)) return { url: action, netlify: false };
+      if (/^https?:\/\//.test(action)) return { url: action, netlify: false };
       if (form.dataset.netlify === 'true') {
         const hosts = (form.dataset.netlifyHosts || 'netlify.app').split(/\s+/).filter(Boolean);
         const host = location.hostname;
@@ -291,6 +291,7 @@
       status.className = 'form__status is-sending';
       status.textContent = 'Küldés folyamatban…';
 
+      let succeeded = false;
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
@@ -312,12 +313,12 @@
             });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-        // Csak igazolt továbbítás után jelzünk sikert
-        form.hidden = true;
-        status.textContent = '';
-        done.hidden = false;
-        done.focus();
-        done.scrollIntoView({ behavior: scrollBehavior(), block: 'center' });
+        // Csak igazolt továbbítás után irányítunk a köszönőoldalra
+        succeeded = true;
+        status.textContent = 'Elküldve, átirányítás…';
+        const service = form.querySelector('input[name="szolgaltatas"]:checked')?.value || '';
+        const next = form.dataset.success || 'koszonjuk.html';
+        location.assign(service ? `${next}?szolgaltatas=${encodeURIComponent(service)}` : next);
       } catch (err) {
         const timedOut = err && err.name === 'AbortError';
         showFailure(
@@ -329,7 +330,7 @@
         );
       } finally {
         clearTimeout(timer);
-        setSending(false);
+        if (!succeeded) setSending(false);
       }
     });
   }
@@ -474,6 +475,18 @@
     timelines.forEach((t) => ro.observe(t.wrap));
   }
   reduceMotion.addEventListener?.('change', onScroll);
+
+  /* ---------------------------------------------------------------------
+     Köszönőoldal: a választott szolgáltatáshoz illő tanács
+     --------------------------------------------------------------------- */
+  const tips = document.querySelectorAll('[data-tip]');
+  if (tips.length) {
+    const chosen = new URLSearchParams(location.search).get('szolgaltatas');
+    const show = chosen === 'mindketto' ? ['erintesvedelem', 'napelem'] : [chosen];
+    if (SERVICES.includes(chosen)) {
+      tips.forEach((t) => { t.hidden = !show.includes(t.dataset.tip); });
+    }
+  }
 
   document.querySelectorAll('[data-year]').forEach((el) => {
     el.textContent = String(new Date().getFullYear());

@@ -1180,18 +1180,96 @@ legend.field__label { margin-bottom: 10px; }
 .form__status.is-sending { color: var(--muted); font-size: 0.9375rem; }
 .form__status strong { display: block; margin-bottom: 2px; }
 
-.form-done { display: grid; gap: 12px; justify-items: start; padding-block: 16px; }
-.form-done:focus { outline: none; }
-.form-done__icon {
+
+/* --------------------------------------------------------------------------
+   Köszönőoldal
+   -------------------------------------------------------------------------- */
+.btn__icon--back { transform: rotate(180deg); }
+.btn:hover .btn__icon--back { transform: rotate(180deg) translateX(3px); }
+.thanks {
+  position: relative;
+  overflow: clip;
+  padding-block: clamp(64px, 9vw, 128px);
+  background-color: var(--navy-900);
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+  background-size: 56px 56px;
+  color: var(--on-dark-muted);
+}
+.thanks__inner { position: relative; z-index: 1; display: grid; gap: 24px; justify-items: start; }
+.thanks__inner > * { max-width: 860px; }
+.page-thanks .site-header__inner { flex-wrap: nowrap; }
+@media (max-width: 419px) {
+  .btn__more { display: none; }
+  .deco--thanks-dots { display: none; }
+}
+.deco--thanks-arcs { top: -40px; right: -40px; }
+.deco--thanks-dots { right: 6%; bottom: 32px; width: 180px; height: 120px; color: var(--yellow); opacity: 0.35; }
+.thanks__icon {
   display: grid;
   place-items: center;
-  width: 52px;
-  height: 52px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
   background: var(--yellow);
   color: var(--navy-900);
+  box-shadow: 0 0 0 8px rgba(226, 196, 91, 0.18);
 }
-.form-done__icon svg { width: 26px; height: 26px; }
+.thanks__icon svg { width: 32px; height: 32px; }
+.thanks__title {
+  font-family: var(--font-head);
+  font-size: clamp(2.125rem, 1.4rem + 3vw, 3.75rem);
+  font-weight: 680;
+  font-stretch: 88%;
+  line-height: 1.04;
+  letter-spacing: -0.035em;
+  color: var(--on-dark);
+  text-wrap: balance;
+}
+.thanks__lead { font-size: clamp(1.125rem, 1.05rem + 0.4vw, 1.3125rem); color: #dbe3ee; max-width: 46ch; }
+.thanks-next { background: var(--bg); }
+.thanks-next__grid { display: grid; gap: 48px; align-items: start; }
+@media (min-width: 900px) { .thanks-next__grid { grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); gap: clamp(48px, 6vw, 96px); } }
+.thanks-next .h2 { margin-bottom: 32px; }
+.next-steps { display: grid; gap: 14px; }
+.next-steps li {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  font-size: 1.0625rem;
+  line-height: 1.45;
+}
+.next-steps__num {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--navy-900);
+  color: var(--yellow);
+  font-family: var(--font-head);
+  font-weight: 680;
+}
+.prep {
+  display: grid;
+  gap: 18px;
+  padding: clamp(24px, 3vw, 36px);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+}
+.prep__tip { display: grid; gap: 6px; padding-bottom: 18px; border-bottom: 1px solid var(--border); }
+.prep__label { display: flex; align-items: center; gap: 8px; font-weight: 650; color: var(--ink); }
+.prep__label svg { width: 20px; height: 20px; color: var(--navy-900); }
+.prep__tip p:not(.prep__label) { font-size: 0.9375rem; color: var(--text); }
+.prep__contact { display: grid; gap: 4px; }
+.prep__contact p { font-size: 0.9375rem; color: var(--muted); }
+.prep__phone { font-family: var(--font-head); font-weight: 680; font-size: 1.5rem; color: var(--ink); text-decoration: none; }
+.prep__mail { font-weight: 600; color: var(--ink); }
 
 /* --------------------------------------------------------------------------
    Lábléc

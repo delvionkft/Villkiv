@@ -478,10 +478,12 @@
             ŰRLAP BEKÖTÉSE
             - Netlify-tárhelyen (*.netlify.app és a data-netlify-hosts-ban felsorolt domainek)
               a Netlify Forms fogadja a beküldést. Saját domainnél vedd fel a domaint a listába.
-            - Más tárhelyen az action attribútumba kell a feldolgozó végpont URL-je
-              (pl. Formspree). Végpont nélkül az űrlap hibát jelez, és SOHA nem mutat sikert.
+              Az action="/koszonjuk" a JS nélküli beküldés utáni köszönőoldal.
+            - Más tárhelyen az action attribútumba a feldolgozó végpont teljes https:// URL-je
+              kell (pl. Formspree). Végpont nélkül az űrlap hibát jelez, és SOHA nem mutat sikert.
+            - Sikeres beküldés után a data-success oldalra (koszonjuk.html) irányít.
           -->
-          <form class="form" id="ajanlat-urlap" name="ajanlatkeres" action="" method="post" novalidate data-netlify="true" data-netlify-hosts="netlify.app villkiv.hu" netlify-honeypot="_gotcha">
+          <form class="form" id="ajanlat-urlap" name="ajanlatkeres" action="/koszonjuk" method="post" data-success="koszonjuk.html" novalidate data-netlify="true" data-netlify-hosts="netlify.app villkiv.hu" netlify-honeypot="_gotcha">
             <div class="form__summary" id="urlap-hibak" tabindex="-1" hidden>
               <p class="form__summary-title">Néhány mezőt még ki kell javítani:</p>
               <ul></ul>
@@ -570,11 +572,6 @@
             <div class="form__status" role="status" aria-live="polite"></div>
           </form>
 
-          <div class="form-done" id="urlap-kesz" tabindex="-1" hidden>
-            <span class="form-done__icon" aria-hidden="true"><svg><use href="#i-check"/></svg></span>
-            <h3 class="h3">Megkaptuk az ajánlatkérésedet.</h3>
-            <p>Köszönjük! 48 órán belül keresünk a megadott elérhetőségeiden.</p>
-          </div>
         </div>
       </div>
     </section>

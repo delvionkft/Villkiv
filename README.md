@@ -56,6 +56,7 @@ A `dist` mappát (vagy a belőle készült zip-et) húzd be ide: https://app.net
 **Ajánlatkérő űrlap:** Netlify-tárhelyen a beépített Netlify Forms fogadja a beküldéseket (`data-netlify="true"`, `form-name=ajanlatkeres`).
 - Az első telepítés után a Netlify felületén: *Site configuration → Forms*. Engedélyezd az űrlapfelismerést, ha kéri, majd telepítsd újra (húzd be újra a mappát).
 - E-mail értesítés: *Forms → Form notifications → Email notification* → `mernok@villkiv.hu`.
+- Sikeres beküldés után az oldal a `koszonjuk.html` köszönőoldalra irányít, a választott szolgáltatáshoz illő tanáccsal (`?szolgaltatas=napelem|erintesvedelem|mindketto`). JS nélkül a Netlify a `/koszonjuk` oldalra visz (a `<form>` `action` attribútuma). A köszönőoldal `noindex`, nem kerül a keresőkbe.
 - Saját domainnél vedd fel a domaint a `<form>` elem `data-netlify-hosts` attribútumába. Most: `netlify.app villkiv.hu`. Más tárhelyen a Netlify-mód biztonsági okból nem kapcsol be: ott az űrlap hibát jelez, és nem mutat hamis sikert.
 
 ## Referenciák

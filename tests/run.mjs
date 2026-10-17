@@ -306,7 +306,7 @@ await test('üres beküldés: hibalista fókuszban, mezők jelölve, nincs kér�
     focus: document.activeElement.id,
     items: document.querySelectorAll('#urlap-hibak li').length,
     invalid: [...document.querySelectorAll('[aria-invalid="true"]')].map((e) => e.id || e.name),
-    done: !document.getElementById('urlap-kesz').hidden,
+    done: location.pathname.endsWith('koszonjuk.html'),
   }));
   assert(s.summaryVisible && s.focus === 'urlap-hibak', 'a hibalista nem látszik / nincs fókuszban');
   assert(s.items === 5, `hibák száma: ${s.items} (5 kötelező mező)`);
@@ -339,7 +339,7 @@ await test('bekötetlen űrlap (üres action): hibaállapot, SOHA nem mutat sike
   await page.click('.form__submit');
   const s = await page.evaluate(() => ({
     status: document.querySelector('.form__status').textContent,
-    done: !document.getElementById('urlap-kesz').hidden,
+    done: location.pathname.endsWith('koszonjuk.html'),
     kept: document.getElementById('nev').value,
   }));
   assert(/nincs bekötve/.test(s.status), `státusz: ${s.status}`);
@@ -361,16 +361,16 @@ async function withEndpoint(handler, run) {
   await context.close();
 }
 
-await test('sikeres továbbítás (HTTP 200): köszönő állapot, fókusz, adatok a kérésben', async () => {
+await test('sikeres továbbítás (HTTP 200): átirányítás a köszönőoldalra, adatok a kérésben', async () => {
   await withEndpoint(
     (route) => route.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true}' }),
     async (page, posts) => {
       await page.click('text=Napelemes rendszerre kérek ajánlatot');
       await fill(page);
       await page.click('.form__submit');
-      await page.waitForSelector('#urlap-kesz:not([hidden])');
-      const focus = await page.evaluate(() => document.activeElement.id);
-      assert(focus === 'urlap-kesz', `fókusz: ${focus}`);
+      await page.waitForURL(/koszonjuk\.html\?szolgaltatas=napelem$/);
+      const h1 = await page.textContent('h1');
+      assert(/Köszönjük/.test(h1), `köszönőoldal címe: ${h1}`);
       assert(posts.length === 1, `kérések: ${posts.length}`);
       for (const needle of ['name="szolgaltatas"', 'napelem', 'Teszt Elek', '+36 30 123 4567', 'teszt@pelda.hu', 'Kecskemét']) {
         assert(posts[0].includes(needle), `hiányzik a kérésből: ${needle}`);
@@ -388,13 +388,13 @@ await test('szerverhiba (HTTP 500): hibaállapot, űrlap és adatok megmaradnak,
       await page.click('.form__submit');
       await page.waitForSelector('.form__status.is-error');
       const s = await page.evaluate(() => ({
-        done: !document.getElementById('urlap-kesz').hidden,
+        done: location.pathname.endsWith('koszonjuk.html'),
         formVisible: !document.getElementById('ajanlat-urlap').hidden,
         btn: document.querySelector('.form__submit').disabled,
       }));
       assert(!s.done && s.formVisible && !s.btn, JSON.stringify(s));
       await page.click('.form__submit');
-      await page.waitForSelector('#urlap-kesz:not([hidden])');
+      await page.waitForURL(/koszonjuk\.html/);
       assert(posts.length === 2, `kérések: ${posts.length}`);
     },
   );
@@ -407,7 +407,7 @@ await test('hálózati hiba: hibaállapot, nincs sikerjelzés', async () => {
       await fill(page);
       await page.click('.form__submit');
       await page.waitForSelector('.form__status.is-error');
-      assert(await page.isHidden('#urlap-kesz'), 'sikerjelzés hálózati hibánál');
+      assert(!page.url().includes('koszonjuk'), 'átirányított hálózati hibánál');
     },
   );
 });
@@ -423,7 +423,7 @@ await test('küldés közben a gomb letiltva, dupla kattintás egy kérést kül
       await page.click('.form__submit');
       const disabled = await page.evaluate(() => document.querySelector('.form__submit').disabled);
       await page.click('.form__submit', { force: true }).catch(() => {});
-      await page.waitForSelector('#urlap-kesz:not([hidden])');
+      await page.waitForURL(/koszonjuk\.html/);
       assert(disabled, 'a gomb nem tiltott küldés közben');
       assert(posts.length === 1, `kérések: ${posts.length}`);
     },
@@ -452,7 +452,7 @@ await test('mérési pontok: csak érintésvédelemnél látszanak, elküldjük 
       await page.fill('#dugalj', '24');
       await page.fill('#eloszto', '2');
       await page.click('.form__submit');
-      await page.waitForSelector('#urlap-kesz:not([hidden])');
+      await page.waitForURL(/koszonjuk\.html/);
       assert(posts.length === 1 && posts[0].includes('name="dugalj"') && posts[0].includes('24') && posts[0].includes('name="eloszto"'), 'a pontok nem kerültek a kérésbe');
     },
   );
@@ -467,7 +467,7 @@ await test('napelemnél a mérési pontok nem kerülnek a kérésbe', async () =
       await page.check('input[value="napelem"]');
       await fill(page);
       await page.click('.form__submit');
-      await page.waitForSelector('#urlap-kesz:not([hidden])');
+      await page.waitForURL(/koszonjuk\.html/);
       assert(!posts[0].includes('name="lampa"'), 'elrejtett mező is elment');
     },
   );
@@ -496,7 +496,7 @@ await test('Netlify-tárhelyen a Netlify Forms fogadja a beküldést (form-name,
   await page.check('input[value="napelem"]');
   await fill(page);
   await page.click('.form__submit');
-  await page.waitForSelector('#urlap-kesz:not([hidden])');
+  await page.waitForURL(/koszonjuk\.html/);
   assert(posts.length === 1, `kérések: ${posts.length}`);
   const p = posts[0];
   assert(new URL(p.url).pathname === '/', `végpont: ${p.url}`);
@@ -515,8 +515,39 @@ await test('ismeretlen tárhelyen a Netlify-mód nem kapcsol be, nincs hamis sik
   await fill(page);
   await page.click('.form__submit');
   const status = await page.textContent('.form__status');
-  assert(/nincs bekötve/.test(status) && posted === 0 && (await page.isHidden('#urlap-kesz')), `állapot: ${status}, kérések: ${posted}`);
+  assert(/nincs bekötve/.test(status) && posted === 0 && !page.url().includes('koszonjuk'), `állapot: ${status}, kérések: ${posted}`);
   await context.close();
+});
+
+console.log('\nKöszönőoldal');
+for (const [service, visible] of [['napelem', ['napelem']], ['erintesvedelem', ['erintesvedelem']], ['mindketto', ['erintesvedelem', 'napelem']], ['', ['erintesvedelem', 'napelem']]]) {
+  await test(`köszönőoldal: szolgáltatáshoz illő tanács (${service || 'paraméter nélkül'})`, async () => {
+    const { page, context, errors } = await open({ width: 390, height: 844 }, { url: `${BASE}koszonjuk.html${service ? `?szolgaltatas=${service}` : ''}` });
+    const shown = await page.evaluate(() => [...document.querySelectorAll('[data-tip]')].filter((t) => !t.hidden).map((t) => t.dataset.tip).sort());
+    assert(JSON.stringify(shown) === JSON.stringify(visible.sort()), `látható tanácsok: ${shown}`);
+    assert(errors.length === 0, errors.join(' | '));
+    await context.close();
+  });
+}
+
+await test('köszönőoldal: noindex, nincs WCAG-hiba, nincs vízszintes görgetés, vissza link működik', async () => {
+  for (const width of [320, 1440]) {
+    const { page, context } = await open({ width, height: 900 }, { url: `${BASE}koszonjuk.html?szolgaltatas=napelem`, reducedMotion: 'reduce' });
+    const r = await page.evaluate(() => ({
+      robots: document.querySelector('meta[name="robots"]')?.content,
+      overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth,
+    }));
+    assert(r.robots === 'noindex' && !r.overflow, JSON.stringify(r));
+    await axe(page, `köszönőoldal ${width}px`);
+    if (width === 1440) {
+      await page.screenshot({ path: `${OUT}koszonjuk-1440.png`, fullPage: true });
+      await page.click('header .btn');
+      await page.waitForURL((u) => u.pathname === '/');
+    } else {
+      await page.screenshot({ path: `${OUT}koszonjuk-320.png`, fullPage: true });
+    }
+    await context.close();
+  }
 });
 
 console.log('\nGörgetéskövetés');
