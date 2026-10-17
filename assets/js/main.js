@@ -46,7 +46,7 @@
 
   const selectService = (value) => {
     if (!form || !SERVICES.includes(value)) return null;
-    const radio = form.querySelector(`input[name="szolgaltatas"][value="${value}"]`);
+    const radio = form.querySelector(`input[type="radio"][name="szolgaltatas"][value="${value}"]`);
     if (!radio) return null;
     radio.checked = true;
     radio.dispatchEvent(new Event('change', { bubbles: true }));
@@ -55,12 +55,14 @@
 
   document.addEventListener('click', (e) => {
     const link = e.target.closest('a[data-service]');
-    if (!link || !contact) return;
-    const radio = selectService(link.dataset.service);
-    if (!radio) return;
+    if (!link || !contact || !form) return;
+    // Több szolgáltatásnál a megfelelő választógombot jelöljük ki; egyetlen
+    // szolgáltatásnál (rejtett mező) az első kitöltendő mezőre visszük a fókuszt.
+    const target = selectService(link.dataset.service) || form.querySelector('input:not([type="hidden"]):not([tabindex="-1"])');
+    if (!target) return;
     e.preventDefault();
     contact.scrollIntoView({ behavior: scrollBehavior(), block: 'start' });
-    radio.focus({ preventScroll: true });
+    target.focus({ preventScroll: true });
     try {
       if (location.hash !== '#kapcsolat') history.pushState(null, '', '#kapcsolat');
     } catch {
@@ -123,6 +125,9 @@
           ? ''
           : 'A darabszámot egész számmal add meg (dugalj, lámpa, kapcsoló: 0–999, elosztó: 0–99).',
     };
+    // Egyszolgáltatásos oldalon (rejtett szolgaltatas mező) nincs mit választani
+    if (!form.querySelector('input[type="radio"][name="szolgaltatas"]')) delete rules.szolgaltatas;
+
     const valueOf = (name) => (name === 'szolgaltatas' || name === 'pontok' ? '' : form.elements[name].value);
 
     const LABELS = {
@@ -141,7 +146,7 @@
       const errorEl = document.getElementById(`${name}-hiba`);
       if (errorEl) errorEl.textContent = message;
       if (name === 'szolgaltatas') {
-        serviceSet.classList.toggle('is-invalid', Boolean(message));
+        serviceSet?.classList.toggle('is-invalid', Boolean(message));
         form.querySelectorAll('input[name="szolgaltatas"]').forEach((r) => {
           if (message) r.setAttribute('aria-invalid', 'true');
           else r.removeAttribute('aria-invalid');
@@ -209,7 +214,7 @@
       if (!summary.hidden) renderSummary(validateAllSilently());
     });
     form.addEventListener('change', (e) => {
-      if (e.target.name === 'szolgaltatas') {
+      if (e.target.name === 'szolgaltatas' && rules.szolgaltatas) {
         syncPoints();
         validateField('szolgaltatas');
         if (touched.has('pontok')) validateField('pontok');
@@ -297,7 +302,9 @@
 
       try {
         const data = new FormData(form);
-        ['nev', 'telefon', 'email', 'telepules', 'uzenet'].forEach((k) => data.set(k, String(data.get(k) || '').trim()));
+        ['nev', 'telefon', 'email', 'telepules', 'uzenet', 'fogyasztas'].forEach((k) => {
+          if (data.has(k)) data.set(k, String(data.get(k)).trim());
+        });
         const response = await fetch(target.url, target.netlify
           ? {
               method: 'POST',
@@ -316,7 +323,10 @@
         // Csak igazolt továbbítás után irányítunk a köszönőoldalra
         succeeded = true;
         status.textContent = 'Elküldve, átirányítás…';
-        const service = form.querySelector('input[name="szolgaltatas"]:checked')?.value || '';
+        const service =
+          form.querySelector('input[name="szolgaltatas"]:checked')?.value ||
+          form.querySelector('input[type="hidden"][name="szolgaltatas"]')?.value ||
+          '';
         const next = form.dataset.success || 'koszonjuk.html';
         location.assign(service ? `${next}?szolgaltatas=${encodeURIComponent(service)}` : next);
       } catch (err) {

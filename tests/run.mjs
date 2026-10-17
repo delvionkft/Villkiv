@@ -233,7 +233,7 @@ await test('mobilmenü: nyitás, menüpont, bezáródás, Esc visszaadja a fóku
 
 await test('a szakaszcímet nem takarja el a ragadós fejléc (asztali)', async () => {
   const { page, context } = await open({ width: 1440, height: 900 });
-  for (const id of ['erintesvedelem', 'napelem', 'menete', 'kapcsolat']) {
+  for (const id of ['napelem', 'mukodes', 'menete', 'kapcsolat']) {
     await page.click(`.site-nav__list a[href="#${id}"]`);
     await page.waitForTimeout(1000);
     const r = await page.evaluate((i) => {
@@ -246,53 +246,51 @@ await test('a szakaszcímet nem takarja el a ragadós fejléc (asztali)', async 
   await context.close();
 });
 
-await test('nyitószekció választói a megfelelő szakaszra visznek', async () => {
+await test('nyitószekció: „Ajánlatot kérek” az űrlaphoz, „Hogyan működik?” a működéshez visz', async () => {
   const { page, context } = await open({ width: 390, height: 844 });
-  await page.click('.chooser >> text=Napelemet szeretnék');
+  await page.click('.chooser >> text=Hogyan működik?');
   await page.waitForTimeout(900);
-  assert(page.url().endsWith('#napelem'), page.url());
-  await page.click('.chooser >> text=Érintésvédelem érdekel').catch(async () => {
-    await page.goto(BASE);
-    await page.click('.chooser >> text=Érintésvédelem érdekel');
-  });
+  assert(page.url().endsWith('#mukodes'), page.url());
+  await page.goto(BASE);
+  await page.click('.chooser >> text=Ajánlatot kérek');
   await page.waitForTimeout(900);
-  assert(page.url().endsWith('#erintesvedelem'), page.url());
+  const s = await page.evaluate(() => ({ active: document.activeElement.id, top: document.getElementById('kapcsolat').getBoundingClientRect().top }));
+  assert(s.active === 'nev' && s.top < 200 && s.top > -10, JSON.stringify(s));
   await context.close();
 });
 
 console.log('\nAjánlatkérés');
-await test('CTA-gomb az űrlaphoz görget és kiválasztja a szolgáltatást; módosítható', async () => {
-  const { page, context } = await open({ width: 390, height: 844 });
-  await page.click('text=Napelemes rendszerre kérek ajánlatot');
-  await page.waitForTimeout(900);
-  const s = await page.evaluate(() => ({
-    checked: document.querySelector('input[name="szolgaltatas"]:checked')?.value,
-    active: document.activeElement.value,
-    top: document.getElementById('kapcsolat').getBoundingClientRect().top,
-  }));
-  assert(s.checked === 'napelem', `kijelölve: ${s.checked}`);
-  assert(s.active === 'napelem', 'a fókusz nem a kijelölt lehetőségen');
-  assert(s.top < 200 && s.top > -10, `az űrlap szakasz nincs a nézetben (${s.top})`);
-  await page.click('text=Felülvizsgálatra kérek ajánlatot');
-  await page.waitForTimeout(900);
-  assert((await page.evaluate(() => document.querySelector('input[name="szolgaltatas"]:checked').value)) === 'erintesvedelem', 'második CTA nem váltott');
-  await page.click('label.choice >> text=Mindkettő érdekel');
-  assert((await page.evaluate(() => document.querySelector('input[name="szolgaltatas"]:checked').value)) === 'mindketto', 'nem módosítható');
-  await context.close();
+await test('CTA-gombok az űrlaphoz görgetnek és az első mezőre teszik a fókuszt', async () => {
+  for (const label of ['Napelemes rendszerre kérek ajánlatot', 'Rendszertervet kérek']) {
+    const { page, context } = await open({ width: 390, height: 844 });
+    await page.click(`text=${label}`);
+    await page.waitForTimeout(900);
+    const s = await page.evaluate(() => ({
+      active: document.activeElement.id,
+      top: document.getElementById('kapcsolat').getBoundingClientRect().top,
+      hash: location.hash,
+    }));
+    assert(s.active === 'nev', `fókusz (${label}): ${s.active}`);
+    assert(s.top < 200 && s.top > -10, `az űrlap szakasz nincs a nézetben (${s.top})`);
+    assert(s.hash === '#kapcsolat', `hash: ${s.hash}`);
+    await context.close();
+  }
 });
 
-await test('?szolgaltatas=mindketto URL-paraméter előválaszt', async () => {
-  const { page, context } = await open({ width: 1280, height: 800 }, { url: `${BASE}?szolgaltatas=mindketto#kapcsolat` });
-  const v = await page.evaluate(() => document.querySelector('input[name="szolgaltatas"]:checked')?.value);
-  assert(v === 'mindketto', `kijelölve: ${v}`);
+await test('egyszolgáltatásos űrlap: nincs szolgáltatásválasztó, a szolgáltatás rejtett mezőben „napelem”', async () => {
+  const { page, context } = await open({ width: 1280, height: 800 });
+  const s = await page.evaluate(() => ({
+    radios: document.querySelectorAll('input[type="radio"][name="szolgaltatas"]').length,
+    hidden: document.querySelector('input[type="hidden"][name="szolgaltatas"]')?.value,
+    text: document.body.innerText,
+  }));
+  assert(s.radios === 0 && s.hidden === 'napelem', JSON.stringify({ radios: s.radios, hidden: s.hidden }));
+  assert(!/érintésvédel|felülvizsgálat/i.test(s.text), 'érintésvédelmi tartalom maradt az oldalon');
   await context.close();
 });
 
 async function fill(page, overrides = {}) {
-  const data = { nev: 'Teszt Elek', telefon: '+36 30 123 4567', email: 'teszt@pelda.hu', telepules: 'Kecskemét', uzenet: 'Régi ház, 1970-es villanyhálózat.', ...overrides };
-  if (!(await page.evaluate(() => document.querySelector('input[name="szolgaltatas"]:checked')))) {
-    await page.check('input[value="erintesvedelem"]');
-  }
+  const data = { nev: 'Teszt Elek', telefon: '+36 30 123 4567', email: 'teszt@pelda.hu', telepules: 'Kecskemét', fogyasztas: '3 500 kWh', uzenet: 'Délre néző cseréptető, klíma jön.', ...overrides };
   for (const [k, v] of Object.entries(data)) await page.fill(`#${k}`, v);
 }
 
@@ -309,7 +307,7 @@ await test('üres beküldés: hibalista fókuszban, mezők jelölve, nincs kér�
     done: location.pathname.endsWith('koszonjuk.html'),
   }));
   assert(s.summaryVisible && s.focus === 'urlap-hibak', 'a hibalista nem látszik / nincs fókuszban');
-  assert(s.items === 5, `hibák száma: ${s.items} (5 kötelező mező)`);
+  assert(s.items === 4, `hibák száma: ${s.items} (4 kötelező mező)`);
   assert(['nev', 'telefon', 'email', 'telepules'].every((id) => s.invalid.includes(id)), `aria-invalid: ${s.invalid}`);
   assert(!s.done && requests === 0, 'sikeres állapot vagy kérés hibás űrlapnál');
   // A hibalista linkje a mezőre visz
@@ -372,7 +370,7 @@ await test('sikeres továbbítás (HTTP 200): átirányítás a köszönőoldalr
       const h1 = await page.textContent('h1');
       assert(/Köszönjük/.test(h1), `köszönőoldal címe: ${h1}`);
       assert(posts.length === 1, `kérések: ${posts.length}`);
-      for (const needle of ['name="szolgaltatas"', 'napelem', 'Teszt Elek', '+36 30 123 4567', 'teszt@pelda.hu', 'Kecskemét']) {
+      for (const needle of ['name="szolgaltatas"', 'napelem', 'Teszt Elek', '+36 30 123 4567', 'teszt@pelda.hu', 'Kecskemét', 'name="fogyasztas"', '3 500 kWh']) {
         assert(posts[0].includes(needle), `hiányzik a kérésből: ${needle}`);
       }
     },
@@ -430,49 +428,6 @@ await test('küldés közben a gomb letiltva, dupla kattintás egy kérést kül
   );
 });
 
-await test('mérési pontok: csak érintésvédelemnél látszanak, elküldjük őket, hibás értéket jeleznek', async () => {
-  await withEndpoint(
-    (route) => route.fulfill({ status: 200, body: '{}' }),
-    async (page, posts) => {
-      const visible = () => page.isVisible('#pontok-mezo');
-      assert(!(await visible()), 'szolgáltatás nélkül is látszik');
-      await page.check('input[value="napelem"]');
-      assert(!(await visible()), 'napelemnél is látszik');
-      await page.check('input[value="erintesvedelem"]');
-      assert(await visible(), 'érintésvédelemnél nem látszik');
-      await page.check('input[value="mindketto"]');
-      assert(await visible(), '„mindkettő” esetén nem látszik');
-      await page.fill('#dugalj', '-5');
-      await fill(page);
-      await page.click('.form__submit');
-      const err = await page.textContent('#pontok-hiba');
-      assert(/egész számmal/.test(err), `hibaüzenet: ${err}`);
-      assert((await page.getAttribute('#dugalj', 'aria-invalid')) === 'true', 'nincs aria-invalid');
-      assert(posts.length === 0, 'hibás értékkel is küldött');
-      await page.fill('#dugalj', '24');
-      await page.fill('#eloszto', '2');
-      await page.click('.form__submit');
-      await page.waitForURL(/koszonjuk\.html/);
-      assert(posts.length === 1 && posts[0].includes('name="dugalj"') && posts[0].includes('24') && posts[0].includes('name="eloszto"'), 'a pontok nem kerültek a kérésbe');
-    },
-  );
-});
-
-await test('napelemnél a mérési pontok nem kerülnek a kérésbe', async () => {
-  await withEndpoint(
-    (route) => route.fulfill({ status: 200, body: '{}' }),
-    async (page, posts) => {
-      await page.check('input[value="erintesvedelem"]');
-      await page.fill('#lampa', '12');
-      await page.check('input[value="napelem"]');
-      await fill(page);
-      await page.click('.form__submit');
-      await page.waitForURL(/koszonjuk\.html/);
-      assert(!posts[0].includes('name="lampa"'), 'elrejtett mező is elment');
-    },
-  );
-});
-
 async function onFakeHost(host, onPost) {
   const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   await context.route(`https://${host}/**`, async (route) => {
@@ -493,7 +448,6 @@ await test('Netlify-tárhelyen a Netlify Forms fogadja a beküldést (form-name,
     posts.push({ url: req.url(), body: req.postData() || '', type: req.headers()['content-type'] || '' });
     return route.fulfill({ status: 200, contentType: 'text/html', body: '<p>ok</p>' });
   });
-  await page.check('input[value="napelem"]');
   await fill(page);
   await page.click('.form__submit');
   await page.waitForURL(/koszonjuk\.html/);
@@ -520,7 +474,7 @@ await test('ismeretlen tárhelyen a Netlify-mód nem kapcsol be, nincs hamis sik
 });
 
 console.log('\nKöszönőoldal');
-for (const [service, visible] of [['napelem', ['napelem']], ['erintesvedelem', ['erintesvedelem']], ['mindketto', ['erintesvedelem', 'napelem']], ['', ['erintesvedelem', 'napelem']]]) {
+for (const [service, visible] of [['napelem', ['napelem']], ['', ['napelem']]]) {
   await test(`köszönőoldal: szolgáltatáshoz illő tanács (${service || 'paraméter nélkül'})`, async () => {
     const { page, context, errors } = await open({ width: 390, height: 844 }, { url: `${BASE}koszonjuk.html${service ? `?szolgaltatas=${service}` : ''}` });
     const shown = await page.evaluate(() => [...document.querySelectorAll('[data-tip]')].filter((t) => !t.hidden).map((t) => t.dataset.tip).sort());
@@ -579,7 +533,7 @@ await test('aktív menüpont követi a görgetést; egerezéskor is megjelenik a
   const { page, context } = await open({ width: 1440, height: 900 });
   const active = () => page.evaluate(() => [...document.querySelectorAll('.site-nav__list a[aria-current="true"]')].map((a) => a.getAttribute('href')));
   assert((await active()).length === 0, `a nyitószekciónál nem lehet aktív menüpont: ${await active()}`);
-  for (const id of ['erintesvedelem', 'napelem', 'menete', 'kapcsolat']) {
+  for (const id of ['napelem', 'mukodes', 'menete', 'kapcsolat']) {
     await page.evaluate((i) => document.getElementById(i).scrollIntoView({ behavior: 'instant' }), id);
     await page.waitForTimeout(150);
     const a = await active();
@@ -604,7 +558,7 @@ for (const [width, height] of [[1440, 900], [390, 844]]) {
       on: [...w.querySelectorAll('.timeline__item')].map((i) => i.classList.contains('is-on')),
     })));
     let s = await state();
-    assert(s.length === 3 && s.every((t) => t.ready), `a vezeték nem készült el (${s.length})`);
+    assert(s.length === 2 && s.every((t) => t.ready), `a vezeték nem készült el (${s.length})`);
     assert(s.every((t) => t.p === 0 && t.on.every((x) => !x)), `betöltéskor már töltve: ${JSON.stringify(s)}`);
     // Végiggörgetés kis lépésekben: a kitöltés sosem csökken, a felkapcsolt lépések mindig elöl vannak
     const max = await page.evaluate(() => document.documentElement.scrollHeight - innerHeight);

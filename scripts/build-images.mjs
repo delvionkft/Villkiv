@@ -17,7 +17,7 @@ const OUT = path.join(ROOT, 'assets/img');
 export const IMAGES = {
   'hero-haz': { ratio: 4 / 5, widths: [480, 720, 960, 1200] },
   'hero-meres': { ratio: 4 / 3, widths: [320, 480, 640] },
-  'ev-eloszto': { ratio: 3 / 2, widths: [640, 960, 1280] },
+  'inverter': { ratio: 3 / 2, widths: [640, 960, 1280] },
   'napelem-otthon': { ratio: 4 / 3, widths: [640, 960, 1280] },
   'munka-1': { ratio: 4 / 3, widths: [480, 720, 960] },
   'munka-2': { ratio: 4 / 3, widths: [480, 720, 960] },

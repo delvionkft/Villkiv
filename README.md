@@ -1,6 +1,6 @@
-# Lakossági villamosipari landing oldal
+# VILLKIV – lakossági napelemes landing oldal
 
-Egyoldalas, magyar nyelvű landing oldal két szolgáltatásra: **érintésvédelmi / villamos biztonsági felülvizsgálat** és **napelemes rendszerek**. Statikus HTML + CSS + JS, nincs keretrendszer és nincs futásidejű függőség. A mappa bármilyen tárhelyre feltölthető (`index.html` + `assets/`).
+Egyoldalas, magyar nyelvű landing oldal a VILLKIV Mérnökiroda **lakossági napelemes rendszereihez**. Az érintésvédelmi szolgáltatás külön landinget kap (a közös, kétszolgáltatásos változat a `bee9b8b` commitban érhető el; a külön oldal promptja: `docs/erintesvedelem-landing-prompt.md`). Statikus HTML + CSS + JS, nincs keretrendszer és nincs futásidejű függőség. A mappa bármilyen tárhelyre feltölthető (`index.html` + `assets/`).
 
 ## Élesítés előtt – kötelező teendők
 
@@ -41,7 +41,7 @@ A szkript AVIF és WebP formátumot készít több méretben, középre vágva. 
 Az `index.html`-ben a `<form id="ajanlat-urlap" action="">` `action` attribútumába írd a feldolgozó végpont teljes URL-jét. Ez lehet például Formspree, Getform vagy saját szerveroldali végpont.
 
 - A beküldés `POST`, `multipart/form-data`, `Accept: application/json` fejléccel.
-- Mezők: `szolgaltatas` (`erintesvedelem` | `napelem` | `mindketto`), `nev`, `telefon`, `email`, `telepules`, `uzenet`, továbbá `_subject` és `_gotcha` (spamcsapda; a szerveroldalon kell eldobni, ha ki van töltve).
+- Mezők: `szolgaltatas` (rejtett, értéke `napelem`), `nev`, `telefon`, `email`, `telepules`, `fogyasztas` (nem kötelező), `uzenet`, továbbá `_subject` és `_gotcha` (spamcsapda; a szerveroldalon kell eldobni, ha ki van töltve).
 - **Sikeres állapot csak 2xx válasz után jelenik meg.** Nem 2xx válasz, hálózati hiba vagy 15 mp-es időtúllépés esetén hibaüzenet jelenik meg, és a beírt adatok megmaradnak.
 - A szolgáltatások CTA-gombjai előválasztják a szolgáltatást. Hirdetésből is előválaszthatsz, például: `/?szolgaltatas=napelem#kapcsolat`.
 
@@ -56,7 +56,7 @@ A `dist` mappát (vagy a belőle készült zip-et) húzd be ide: https://app.net
 **Ajánlatkérő űrlap:** Netlify-tárhelyen a beépített Netlify Forms fogadja a beküldéseket (`data-netlify="true"`, `form-name=ajanlatkeres`).
 - Az első telepítés után a Netlify felületén: *Site configuration → Forms*. Engedélyezd az űrlapfelismerést, ha kéri, majd telepítsd újra (húzd be újra a mappát).
 - E-mail értesítés: *Forms → Form notifications → Email notification* → `mernok@villkiv.hu`.
-- Sikeres beküldés után az oldal a `koszonjuk.html` köszönőoldalra irányít, a választott szolgáltatáshoz illő tanáccsal (`?szolgaltatas=napelem|erintesvedelem|mindketto`). JS nélkül a Netlify a `/koszonjuk` oldalra visz (a `<form>` `action` attribútuma). A köszönőoldal `noindex`, nem kerül a keresőkbe.
+- Sikeres beküldés után az oldal a `koszonjuk.html` köszönőoldalra irányít, előkészítő tanáccsal (`?szolgaltatas=napelem`). JS nélkül a Netlify a `/koszonjuk` oldalra visz (a `<form>` `action` attribútuma). A köszönőoldal `noindex`, nem kerül a keresőkbe.
 - Saját domainnél vedd fel a domaint a `<form>` elem `data-netlify-hosts` attribútumába. Most: `netlify.app villkiv.hu`. Más tárhelyen a Netlify-mód biztonsági okból nem kapcsol be: ott az űrlap hibát jelez, és nem mutat hamis sikert.
 
 ## Referenciák

@@ -43,3 +43,8 @@ A gyakori kérdések szekciót kérésre eltávolítottuk.
 - Beépítve 5 saját munkafotó: nyitókép (tetőablak melletti rendszer), részletkép (szerelés közben), napelemes szakasz (családi ház, a kamera-vízjel kivágva), és két kép a „Munkáinkból” sávban.
 - Hiányzik: érintésvédelmi fotó (elosztószekrény, mérés). Az érintésvédelmi szakaszban még helyőrző van.
 - Érintésvédelmi szakasz: a feltöltött fotó (inverter, elosztódoboz, akkumulátor) vágott változata került be. Erősebb lenne egy nyitott elosztószekrény mérés közben, mérőműszerrel.
+
+## Szétválasztás (2026-10-17)
+- Ügyfélkérésre a két szolgáltatás külön landinget kapott. Ez a repó mostantól csak a lakossági napelemes rendszerekről szól.
+- A kétszolgáltatásos változat utolsó állapota: `bee9b8b` commit (ebben megvan az érintésvédelmi szakasz, a mérési pontok az űrlapon és a köszönőoldal tanácsai).
+- Az érintésvédelmi landing promptja: `docs/erintesvedelem-landing-prompt.md`.
