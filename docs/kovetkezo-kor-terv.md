@@ -11,7 +11,7 @@ A gyakori kérdések szekciót kérésre eltávolítottuk.
 
 ## Döntések
 - A cég vállalja a hibajavítást, a napelemes rendszer tervezését, kivitelezését és az áramszolgáltatói ügyintézést (beépítve).
-- Űrlap-feldolgozó egyelőre nincs. **Élesítés előtt kötelező** (javaslat: Formspree, a cég saját fiókjával). Addig az űrlap hibát jelez, és sosem mutat sikert.
+- Űrlap-feldolgozó: **EmailJS** (2026-10-17). Amíg a három azonosító nincs beírva, az űrlap hibát jelez, és sosem mutat sikert.
 - Analitika nem kell, ezért sem követőkód, sem sütisáv nem kerül fel.
 
 ## Teendő a következő munkamenet elején
@@ -26,7 +26,7 @@ A gyakori kérdések szekciót kérésre eltávolítottuk.
 ## Cégadatok (2026-10-13)
 - Beépítve: VILLKIV Mérnökiroda Kft., csapat (villamosmérnökök, regisztrált villanyszerelők, villamos biztonsági felülvizsgálók), vállalások (egyedi felmérés, dokumentált átadás, legalább 2 év garancia, felelősségbiztosítás, ügyintézési jogosultság), 48 órás kapcsolatfelvétel, helyszíni felmérés utáni tételes ajánlat, telefon és e-mail.
 - Szándékosan kimaradt: az új családi ház villanyszerelésének árai és határideje, valamint az ipari ügyfelek. Ez az oldal a két lakossági szolgáltatásra szól; az ár a nem itt tárgyalt szolgáltatásról szólna, és összezavarná a látogatót.
-- Még hiányzik: székhely, adószám, nyilvántartási szám, adatkezelési tájékoztató, impresszum, logó, űrlap-feldolgozó, fotók.
+- Később pótolva: székhely, adószám, cégjegyzékszám, adatkezelési tájékoztató, impresszum, logó, fotók (lásd lent).
 
 ## Napelemes anyag (2026-10-13)
 - Beépítve: vállalások (felmérés és méretezés, mérnöki tervezés, engedélyeztetés, pályázat és finanszírozás, kivitelezés és garancia, beüzemelés és monitoring), működés négy lépésben, tájékoztató ár (5 kWp: 2,5–4 M Ft), kivitelezés 1–3 nap, teljes folyamat 2–6 hét, 48 órás személyre szabott rendszerterv kötelezettség nélkül.
@@ -48,3 +48,15 @@ A gyakori kérdések szekciót kérésre eltávolítottuk.
 - Ügyfélkérésre a két szolgáltatás külön landinget kapott. Ez a repó mostantól csak a lakossági napelemes rendszerekről szól.
 - A kétszolgáltatásos változat utolsó állapota: `bee9b8b` commit (ebben megvan az érintésvédelmi szakasz, a mérési pontok az űrlapon és a köszönőoldal tanácsai).
 - Az érintésvédelmi landing promptja: `docs/erintesvedelem-landing-prompt.md`.
+
+## Jogi oldalak és EmailJS (2026-10-17)
+- Elkészült: `adatvedelem.html`, `cookie.html`, `impresszum.html` (forrás: `pages/`, generálás: `npm run pages`). A lábléc a valódi cégadatokat mutatja: 5630 Békés, Kossuth Lajos utca 23. B. lház. 2. em. 21., adószám 32746031-2-04, cégjegyzékszám 04 09 017656.
+- Az űrlap EmailJS-en keresztül küld (beállítás: README). Privát kulcs nincs és nem is lehet a frontendben.
+- Sütisáv nem kell: az oldal nem használ sütit, analitikát, külső betűt; az EmailJS-hívás sem állít be sütit.
+- Ellenőrizendő (`npm run check:placeholders` listázza):
+  - EmailJS Public Key, Service ID, Template ID;
+  - megőrzési idő az adatkezelési tájékoztatóban;
+  - a mernok@villkiv.hu e-mail-szolgáltatója;
+  - a tárhelyszolgáltató adatai az impresszumban;
+  - a megrendelő által küldött „Kft.2025” jelentése (alapítás éve?) – az oldalon nem szerepel.
+- A jogi szövegeket élesítés előtt jogásznak kell átnéznie.

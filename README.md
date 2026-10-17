@@ -6,58 +6,102 @@ Egyoldalas, magyar nyelvű landing oldal a VILLKIV Mérnökiroda **lakossági na
 
 ```bash
 npm install
-npm run check:placeholders   # kilistáz minden kitöltetlen helyőrzőt, hiba esetén exit 1
+npm run check:placeholders   # kilistáz minden kitöltetlen helyőrzőt (főoldal + aloldalak), hiba esetén exit 1
 ```
 
-1. **Cégadatok és elérhetőségek.** A `[szögletes zárójeles]`, sárga, szaggatott keretes szövegek helyőrzők: cégnév, terület, telefon, e-mail, adószám, székhely, nyilvántartási szám, adatkezelési tájékoztató, impresszum. A `tel:` és `mailto:` linkek `href` értékét is töltsd ki.
-2. **Szolgáltatási kör.** Ezeket csak megerősített információ alapján írd át:
-   - a napelemes „Amit vállalunk” lista (felmérés, tervezés, kivitelezés, ügyintézés): töröld, amit nem vállaltok;
-   - a felülvizsgálat után átadott dokumentáció;
-   - a hibajavítás és az ellenőrző mérés vállalása;
-   - a helyszíni felmérés feltételei. **Ingyenes felmérést csak akkor írj, ha valóban az.**
-3. **Logó és színek.** A sárga villám jel csak ideiglenes. Ha van arculati kézikönyv, írd át a `assets/css/styles.css` elején a `--navy` és `--yellow` tokent.
-4. **Fotók.** Lásd lent. A helyőrző képeken jól láthatóan „HELYŐRZŐ” felirat van.
-5. **Űrlap bekötése.** Lásd lent. Amíg nincs bekötve, az űrlap hibaüzenetet ad, sikert soha nem mutat.
+1. **Űrlap bekötése (EmailJS).** Lásd lent. Amíg nincs bekötve, az űrlap hibaüzenetet ad, sikert soha nem mutat.
+2. **Jogi oldalak ellenőrizendő pontjai** (`pages/adatvedelem.html`, `pages/impresszum.html`): megőrzési idő, az e-mail-szolgáltató neve, a tárhelyszolgáltató adatai. Élesítés előtt jogász nézze át.
+3. **Árak.** A 2,5–4 M Ft bruttó (áfával) értendő-e – `ELLENŐRIZENDŐ` megjegyzés az `index.html`-ben.
+
+## Oldalak
+
+| Fájl | Forrás | Megjegyzés |
+|---|---|---|
+| `index.html` | maga | a landing oldal |
+| `koszonjuk.html` | `pages/koszonjuk.html` | sikeres ajánlatkérés után, `noindex` |
+| `adatvedelem.html` | `pages/adatvedelem.html` | adatkezelési tájékoztató, `noindex` |
+| `cookie.html` | `pages/cookie.html` | süti tájékoztató, `noindex` |
+| `impresszum.html` | `pages/impresszum.html` | impresszum, `noindex` |
+
+Az aloldalakat **ne a gyökérben szerkeszd**: a tartalom a `pages/` mappában van, a fejléc, az ikonkészlet és a lábléc az `index.html`-ből jön. Szerkesztés után (és ha a főoldal láblécét módosítod):
+
+```bash
+npm run pages    # újragenerálja a gyökérben lévő aloldalakat
+```
+
+A teszt jelez, ha egy aloldal lábléce eltér a főoldalétól.
+
+**Sütik:** az oldal nem használ sütit, analitikát és külső betűtípust, ezért sütisáv nem kell. Ha később analitika vagy beágyazott térkép/videó kerül fel, a sütisáv és a `cookie.html` frissítése kötelező.
 
 ## Fotók cseréje
 
 Tedd a saját fotót az `assets/src/` mappába **ugyanazzal a névvel**, majd futtasd:
 
 ```bash
-npm run images
+npm run images            # minden kép
+npm run images hero-haz   # csak egy
 ```
 
-| Fájl | Mi legyen rajta | Képarány (automatikus vágás) |
+| Fájl | Hol jelenik meg | Képarány (automatikus vágás) |
 |---|---|---|
-| `hero-haz.jpg` | Családi ház napelemekkel (valódi munka) | 6:5 |
-| `hero-meres.jpg` | Részletfotó: mérés az elosztónál | 4:3 |
-| `ev-eloszto.jpg` | Elosztószekrény, felülvizsgálat közben | 4:5 |
-| `napelem-otthon.jpg` | Napelemes rendszer lakóházon, környezettel | 5:4 |
+| `hero-haz.jpg` | nyitókép | 4:5 |
+| `hero-meres.jpg` | nyitókép részletfotója | 4:3 |
+| `napelem-otthon.jpg` | „Napelemes rendszerek” szakasz | 4:3 |
+| `inverter.jpg` | „Így működik” szakasz | 3:2 |
+| `munka-1.jpg`, `munka-2.jpg` | „Munkáinkból” sáv | 4:3 |
 
-A szkript AVIF és WebP formátumot készít több méretben, középre vágva. A fotó elsőbbséget kap az azonos nevű SVG helyőrzővel szemben. Ha a fotó kész, az SVG törölhető. A képek `alt` szövegét az `index.html`-ben igazítsd a valódi tartalomhoz. Ne használj mosolygó, kamerába néző stock szerelőket.
+A szkript AVIF és WebP formátumot készít több méretben, középre vágva. A képek `alt` szövegét az `index.html`-ben igazítsd a valódi tartalomhoz.
 
-## Az űrlap bekötése
+## Az űrlap bekötése (EmailJS)
 
-Az `index.html`-ben a `<form id="ajanlat-urlap" action="">` `action` attribútumába írd a feldolgozó végpont teljes URL-jét. Ez lehet például Formspree, Getform vagy saját szerveroldali végpont.
+Az űrlap az [EmailJS](https://www.emailjs.com/) szolgáltatáson keresztül küld e-mailt a `mernok@villkiv.hu` címre. Szerver nem kell.
 
-- A beküldés `POST`, `multipart/form-data`, `Accept: application/json` fejléccel.
-- Mezők: `szolgaltatas` (rejtett, értéke `napelem`), `nev`, `telefon`, `email`, `telepules`, `fogyasztas` (nem kötelező), `uzenet`, továbbá `_subject` és `_gotcha` (spamcsapda; a szerveroldalon kell eldobni, ha ki van töltve).
-- **Sikeres állapot csak 2xx válasz után jelenik meg.** Nem 2xx válasz, hálózati hiba vagy 15 mp-es időtúllépés esetén hibaüzenet jelenik meg, és a beírt adatok megmaradnak.
-- A szolgáltatások CTA-gombjai előválasztják a szolgáltatást. Hirdetésből is előválaszthatsz, például: `/?szolgaltatas=napelem#kapcsolat`.
+1. **EmailJS-fiók** (a cég saját fiókja, ne a fejlesztőé).
+2. **Email Services → Add New Service:** kösd be a `mernok@villkiv.hu` postafiókot. → **Service ID**
+3. **Email Templates → Create New Template:**
+   - *To Email:* `mernok@villkiv.hu`
+   - *Reply To:* `{{reply_to}}` – így a válasz egyenesen az érdeklődőhöz megy
+   - *Subject:* `{{targy}} – {{nev}}, {{telepules}}`
+   - *Content* például:
+     ```
+     Név: {{nev}}
+     Telefon: {{telefon}}
+     E-mail: {{email}}
+     Település: {{telepules}}
+     Éves fogyasztás / havi számla: {{fogyasztas}}
+     Üzenet: {{uzenet}}
+     Szolgáltatás: {{szolgaltatas}}
+     Beküldve innen: {{oldal}}
+     ```
+   → **Template ID**
+4. **Account → General:** **Public Key**.
+5. A három értéket írd az `index.html` `<form id="ajanlat-urlap">` elemébe:
+   ```html
+   data-emailjs-public-key="..." data-emailjs-service="service_..." data-emailjs-template="template_..."
+   ```
+6. **Biztonság (kötelező):**
+   - **A Private Key-t SOHA ne írd az oldalba.** A Public Key, a Service ID és a Template ID nyilvános, ezek látszhatnak.
+   - *Account → Security:* korlátozd a küldést a saját domainre (*Allowed origins*: pl. `https://villkiv.hu`, és a Netlify-cím, ha azt is használod).
+   - Ha elérhető a csomagban, kapcsold be a *rate limit*-et (pl. 1 küldés / 10 mp).
+   - A *Use Private Key* kapcsoló maradjon **kikapcsolva**: bekapcsolva minden böngészőből jövő küldés hibát ad (a privát kulcs a böngészőbe nem kerülhet).
+   - A sablon *CAPTCHA* beállítását ne kapcsold be: az űrlap nem küld reCAPTCHA-választ, így minden beküldés hibára futna.
+   - A spamcsapdát (`_gotcha`) a böngésző kezeli: ha ki van töltve, nem küld.
+7. **Próba élesben:** küldj egy próbakérést, nézd meg, hogy megjött-e, és hogy a „Válasz” gomb az érdeklődő címére megy-e.
+
+Működés:
+- **A köszönőoldalra csak az EmailJS 2xx válasza után irányít** (`koszonjuk.html?szolgaltatas=napelem`). Nem 2xx válasz (rossz azonosító, lejárt keret), hálózati hiba vagy 15 mp-es időtúllépés esetén hibaüzenet jelenik meg, és a beírt adatok megmaradnak.
+- Ha a három azonosító közül bármelyik hiányzik, az űrlap „nincs bekötve” hibát ad.
+- JavaScript nélkül az EmailJS nem működik: ilyenkor a küldés gomb helyett a telefonszám és az e-mail-cím jelenik meg.
+- Az ingyenes EmailJS-csomag havi kerete korlátozott. Ha elfogy, az űrlap hibát jelez (nem nyel el kérést), de érdemes figyelni.
+- Tartalék: ha nincs EmailJS-azonosító, de az `action` attribútumban teljes `https://` URL van (pl. Formspree), arra küld `multipart/form-data` formában.
 
 ## Közzététel Netlify Drop-pal
 
 ```bash
-npm run build      # dist/ mappa: csak a weboldalhoz szükséges fájlok
+npm run build      # aloldalak generálása + dist/ mappa: csak a weboldalhoz szükséges fájlok
 ```
 
-A `dist` mappát (vagy a belőle készült zip-et) húzd be ide: https://app.netlify.com/drop
-
-**Ajánlatkérő űrlap:** Netlify-tárhelyen a beépített Netlify Forms fogadja a beküldéseket (`data-netlify="true"`, `form-name=ajanlatkeres`).
-- Az első telepítés után a Netlify felületén: *Site configuration → Forms*. Engedélyezd az űrlapfelismerést, ha kéri, majd telepítsd újra (húzd be újra a mappát).
-- E-mail értesítés: *Forms → Form notifications → Email notification* → `mernok@villkiv.hu`.
-- Sikeres beküldés után az oldal a `koszonjuk.html` köszönőoldalra irányít, előkészítő tanáccsal (`?szolgaltatas=napelem`). JS nélkül a Netlify a `/koszonjuk` oldalra visz (a `<form>` `action` attribútuma). A köszönőoldal `noindex`, nem kerül a keresőkbe.
-- Saját domainnél vedd fel a domaint a `<form>` elem `data-netlify-hosts` attribútumába. Most: `netlify.app villkiv.hu`. Más tárhelyen a Netlify-mód biztonsági okból nem kapcsol be: ott az űrlap hibát jelez, és nem mutat hamis sikert.
+A `dist` mappát (vagy a belőle készült zip-et) húzd be ide: https://app.netlify.com/drop. A tárhelyszolgáltató adatait írd be az impresszumba.
 
 ## Referenciák
 
@@ -76,8 +120,9 @@ A tesztek (Playwright + axe-core) ezeket ellenőrzik:
 - mobilon a főcím és a választók megelőzik a képeket;
 - nincs WCAG 2.2 AA hiba;
 - működik a billentyűzetes navigáció és a mobilmenü;
-- a CTA előválasztja a szolgáltatást;
-- az űrlap minden állapota helyes (üres, hibás, bekötetlen, 200, 500, hálózati hiba, dupla kattintás);
+- a CTA az űrlap első mezőjére viszi a fókuszt;
+- az űrlap minden állapota helyes (üres, hibás, bekötetlen, EmailJS 200 és 400, 500, hálózati hiba, dupla kattintás, spamcsapda), és a kérés törzse a várt sablonváltozókat tartalmazza;
+- a jogi oldalak hibátlanok (noindex, WCAG, linkek), és a láblécük megegyezik a főoldaléval;
 - az elrendezésugrás (CLS) lassú képekkel és betűkkel is < 0,02;
 - működik a csökkentett mozgás beállítás és a JavaScript nélküli megjelenítés.
 

@@ -419,15 +419,16 @@
 
         <div class="contact__form">
           <!--
-            ŰRLAP BEKÖTÉSE
-            - Netlify-tárhelyen (*.netlify.app és a data-netlify-hosts-ban felsorolt domainek)
-              a Netlify Forms fogadja a beküldést. Saját domainnél vedd fel a domaint a listába.
-              Az action="/koszonjuk" a JS nélküli beküldés utáni köszönőoldal.
-            - Más tárhelyen az action attribútumba a feldolgozó végpont teljes https:// URL-je
-              kell (pl. Formspree). Végpont nélkül az űrlap hibát jelez, és SOHA nem mutat sikert.
-            - Sikeres beküldés után a data-success oldalra (koszonjuk.html) irányít.
+            ŰRLAP BEKÖTÉSE (EmailJS)
+            Töltsd ki a három data-emailjs-* attribútumot az EmailJS fiókból:
+            - data-emailjs-public-key: Account → General → Public Key
+            - data-emailjs-service:    Email Services → Service ID
+            - data-emailjs-template:   Email Templates → Template ID
+            Ezek nyilvános azonosítók. A privát kulcsot SOHA ne írd ide.
+            Amíg üresek, az űrlap hibát jelez, és sosem mutat hamis sikert.
+            Sikeres küldés után a data-success oldalra (koszonjuk.html) irányít.
           -->
-          <form class="form" id="ajanlat-urlap" name="ajanlatkeres" action="/koszonjuk" method="post" data-success="koszonjuk.html" novalidate data-netlify="true" data-netlify-hosts="netlify.app villkiv.hu" netlify-honeypot="_gotcha">
+          <form class="form" id="ajanlat-urlap" name="ajanlatkeres" action="" method="post" data-success="koszonjuk.html" novalidate data-emailjs-public-key="" data-emailjs-service="" data-emailjs-template="">
             <div class="form__summary" id="urlap-hibak" tabindex="-1" hidden>
               <p class="form__summary-title">Néhány mezőt még ki kell javítani:</p>
               <ul></ul>
@@ -477,16 +478,16 @@
               <label for="weboldal">Ezt a mezőt hagyd üresen</label>
               <input id="weboldal" name="_gotcha" type="text" tabindex="-1" autocomplete="off">
             </div>
-            <input type="hidden" name="form-name" value="ajanlatkeres">
             <input type="hidden" name="szolgaltatas" value="napelem">
-            <input type="hidden" name="_subject" value="Új napelemes ajánlatkérés a weboldalról">
+            <input type="hidden" name="targy" value="Új napelemes ajánlatkérés a weboldalról">
 
             <div class="form__actions">
               <button class="btn btn--primary btn--block form__submit" type="submit">
                 <span class="form__submit-label">Ajánlatot kérek</span>
                 <svg class="btn__icon" aria-hidden="true"><use href="#i-arrow"/></svg>
               </button>
-              <p class="form__legal"><span class="req" aria-hidden="true">*</span> Kötelező mező. Adatkezelés: <a href="#" class="ph" data-placeholder>[Adatkezelési tájékoztató]</a></p>
+              <noscript><p class="form__noscript">Az űrlap küldéséhez JavaScript szükséges. Hívj minket: <a href="tel:+36205043300">+36 20 504 33 00</a>, vagy írj: <a href="mailto:mernok@villkiv.hu">mernok@villkiv.hu</a>.</p></noscript>
+              <p class="form__legal"><span class="req" aria-hidden="true">*</span> Kötelező mező. Az adataidat az ajánlatkérés megválaszolásához használjuk – részletek az <a href="adatvedelem.html">adatkezelési tájékoztatóban</a>.</p>
             </div>
 
             <div class="form__status" role="status" aria-live="polite"></div>
@@ -507,12 +508,11 @@
         <p>Napelemes és villamos rendszerek tervezése, engedélyeztetése és kivitelezése.</p>
       </div>
 
-      <!-- HELYŐRZŐ: kötelező cégadatok (Ekertv. 4. §) – csak valós adatokkal -->
       <dl class="site-footer__data">
         <div><dt>Cégnév</dt><dd>VILLKIV Mérnökiroda Kft.</dd></div>
-        <div><dt>Székhely</dt><dd><span class="ph" data-placeholder>[Cím]</span></dd></div>
-        <div><dt>Adószám</dt><dd><span class="ph" data-placeholder>[Adószám]</span></dd></div>
-        <div><dt>Nyilvántartási szám</dt><dd><span class="ph" data-placeholder>[Cégjegyzék- / nyilvántartási szám]</span></dd></div>
+        <div><dt>Székhely</dt><dd>5630 Békés, Kossuth Lajos utca 23. B. lház. 2. em. 21.</dd></div>
+        <div><dt>Adószám</dt><dd>32746031-2-04</dd></div>
+        <div><dt>Cégjegyzékszám</dt><dd>04 09 017656</dd></div>
       </dl>
 
       <nav class="site-footer__nav" aria-label="Lábléc">
@@ -528,8 +528,9 @@
     <div class="wrap site-footer__bottom">
       <p>© <span data-year>2026</span> VILLKIV Mérnökiroda Kft.</p>
       <ul>
-        <li><a href="#" class="ph" data-placeholder>[Adatkezelési tájékoztató]</a></li>
-        <li><a href="#" class="ph" data-placeholder>[Impresszum]</a></li>
+        <li><a href="adatvedelem.html">Adatkezelési tájékoztató</a></li>
+        <li><a href="cookie.html">Süti tájékoztató</a></li>
+        <li><a href="impresszum.html">Impresszum</a></li>
       </ul>
     </div>
   </footer>

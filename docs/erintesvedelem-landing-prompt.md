@@ -8,8 +8,9 @@ Készíts egy magyar nyelvű, egyoldalas lakossági landing oldalt a **VILLKIV M
 
 ## Kiinduló kód (ha eléred, ebből dolgozz)
 - Repó: `github.com/delvionkft/Villkiv`, ág: `claude/hungarian-electrical-landing-aa8ac1`.
-- **Dizájn és felépítés:** a `994ae7e` commit (napelemes landing).
-  - Vedd át változtatás nélkül: `assets/css/styles.css`, `assets/js/main.js`, `assets/fonts/`, logó, favicon, `scripts/`, `tests/run.mjs`, `koszonjuk.html` szerkezete, `package.json`.
+- **Dizájn, felépítés, űrlap (EmailJS) és jogi oldalak:** az ág legfrissebb állapota (napelemes landing).
+  - Vedd át változtatás nélkül: `assets/css/styles.css`, `assets/js/main.js`, `assets/fonts/`, logó, favicon, `scripts/` (köztük a `build-pages.mjs` aloldal-generátor), `tests/run.mjs`, `package.json`.
+  - A `pages/` mappából: `koszonjuk.html` (a tanácsot cseréld), `adatvedelem.html`, `cookie.html`, `impresszum.html` (a cégadatok ugyanazok; az adatkezelésnél a kezelt adatokat az érintésvédelmi űrlap mezőihez igazítsd).
 - **Érintésvédelmi szövegek, ikonok és űrlaplogika:** a `bee9b8b` commit (a korábbi, kétszolgáltatásos változat).
   - Itt van a mérési pontok mezőcsoport és az ellenőrzése.
   - Itt van a négylépéses felülvizsgálati idővonal.
@@ -18,8 +19,8 @@ Készíts egy magyar nyelvű, egyoldalas lakossági landing oldalt a **VILLKIV M
 
 ## Technika
 - Statikus HTML + CSS + JS, keretrendszer és futásidejű függőség nélkül.
-- Két oldal: `index.html` és `koszonjuk.html`.
-- `npm run build` → `dist/` mappa Netlify Drophoz.
+- Oldalak: `index.html`, valamint a `pages/` mappából generált `koszonjuk.html`, `adatvedelem.html`, `cookie.html`, `impresszum.html` (`npm run pages`; a fejléc és a lábléc az `index.html`-ből jön).
+- `npm run build` → aloldalak generálása + `dist/` mappa Netlify Drophoz.
 - `npm run images`: a képeket a sharp alakítja AVIF + WebP formátumra, több szélességben, fix képarányra vágva. Minden képnek van width/height attribútuma, hogy betöltéskor ne ugráljon az elrendezés.
 - Betűtípus: Archivo változó betű (wght 400–800, wdth 75–112), saját tárhelyről, magyar karakterekre szűkítve (~65 KB). A tartalék betűk méretre hangoltak (size-adjust), így a CLS < 0,02.
 - `npm run check:placeholders` kilistázza a kitöltetlen helyőrzőket.
@@ -102,17 +103,17 @@ Készíts egy magyar nyelvű, egyoldalas lakossági landing oldalt a **VILLKIV M
      - kötelező mezők: Név, Telefonszám, E-mail-cím, Ingatlan települése;
      - **Mérési pontok (nem kötelező):** dugalj, lámpa, kapcsoló (0–999), elosztó (0–99), egész szám, érthető hibaüzenettel;
      - Rövid üzenet (nem kötelező, max. 1000 karakter);
-     - rejtett mezők: `szolgaltatas=erintesvedelem`, `form-name=ajanlatkeres`, `_gotcha` spamcsapda.
+     - rejtett mezők: `szolgaltatas=erintesvedelem`, `targy=Új érintésvédelmi ajánlatkérés a weboldalról`, `_gotcha` spamcsapda.
      - Szolgáltatásválasztó nem kell.
-9. **Lábléc:** a logó, alatta kiírva „VILLKIV Mérnökiroda Kft.” és a tevékenység. Cégadatok: székhely, adószám és nyilvántartási szám (ezek helyén helyőrző). Menü, adatkezelési tájékoztató, impresszum (helyőrző).
+9. **Lábléc:** a logó, alatta kiírva „VILLKIV Mérnökiroda Kft.” és a tevékenység. Cégadatok: VILLKIV Mérnökiroda Kft., székhely 5630 Békés, Kossuth Lajos utca 23. B. lház. 2. em. 21., adószám 32746031-2-04, cégjegyzékszám 04 09 017656. Menü; alul linkek: Adatkezelési tájékoztató, Süti tájékoztató, Impresszum.
 
 ## Űrlap és köszönőoldal (ugyanúgy, mint a napelemes oldalon)
 - **Ellenőrzés:**
   - hibaüzenet csak az után, hogy a látogató elhagyta a mezőt;
   - beküldéskor fókuszba kerülő hibalista, a mezőkre mutató linkekkel;
   - `aria-invalid` a hibás mezőkön.
-- **Netlify Forms:** `data-netlify="true"`, `netlify-honeypot="_gotcha"`, urlencoded POST a `/`-re. **Csak** `*.netlify.app` és a `data-netlify-hosts`-ban felsorolt domaineken kapcsol be; máshol az űrlap hibát jelez, sosem mutat hamis sikert.
-- **Átirányítás:** csak 2xx válasz után, a `koszonjuk.html?szolgaltatas=erintesvedelem` oldalra. Hibánál az adatok megmaradnak. Küldés közben a gomb tiltott, 15 mp az időtúllépés. JS nélkül az `action="/koszonjuk"` viszi a köszönőoldalra.
+- **EmailJS:** a `<form>` `data-emailjs-public-key`, `data-emailjs-service`, `data-emailjs-template` attribútumai alapján JSON POST a `https://api.emailjs.com/api/v1.0/email/send` címre (`template_params`: a mezők + `oldal` + `reply_to`; a `_` kezdetű mezők nem). Ha bármelyik azonosító hiányzik, az űrlap „nincs bekötve” hibát ad. **Privát kulcs soha nem kerül a frontendbe.** Kitöltött spamcsapdánál nincs küldés. JS nélkül a küldés gomb rejtve, helyette telefonszám és e-mail-cím. Mérési pontok sablonváltozói: `dugalj`, `lampa`, `kapcsolo`, `eloszto` (a mezőnevekkel egyezően).
+- **Átirányítás:** csak 2xx válasz után, a `koszonjuk.html?szolgaltatas=erintesvedelem` oldalra. Hibánál az adatok megmaradnak. Küldés közben a gomb tiltott, 15 mp az időtúllépés. 
 - **Köszönőoldal (`noindex`):**
   - megerősítés és a 48 órás ígéret;
   - „Mi következik?”, három lépés;
@@ -128,7 +129,8 @@ Készíts egy magyar nyelvű, egyoldalas lakossági landing oldalt a **VILLKIV M
 - Az idővonalak sorban kapcsolnak fel.
 - Az aktív menüpont és a fejléccsík jól működik.
 - Az űrlap minden állapota helyes: üres, hibás, bekötetlen, HTTP 200, HTTP 500, hálózati hiba, dupla kattintás.
-- Netlify-tárhelyen beküld, ismeretlen tárhelyen nem.
+- EmailJS: a kérés törzse helyes; 400-nál hiba; részleges beállításnál nincs küldés; spamcsapdánál nincs kérés.
+- Jogi oldalak: noindex, WCAG, működő linkek, a lábléc egyezik a főoldaléval.
 - Csökkentett mozgásnál nincs animáció; JS nélkül is minden tartalom olvasható.
 
 ## Tilos
@@ -140,7 +142,6 @@ Készíts egy magyar nyelvű, egyoldalas lakossági landing oldalt a **VILLKIV M
 
 ## Ellenőrizendő a megrendelővel
 - A 20–60 ezer Ft bruttó (áfával) értendő-e.
-- Székhely, adószám, nyilvántartási szám.
-- Adatkezelési tájékoztató és impresszum.
+- Az adatkezelési tájékoztató ellenőrizendő pontjai (megőrzési idő, e-mail- és tárhelyszolgáltató) – ugyanazok, mint a napelemes oldalon.
 - Valódi érintésvédelmi fotók: elosztószekrény mérés közben, mérőműszer.
-- A Netlify űrlapértesítés címe: mernok@villkiv.hu.
+- EmailJS: külön sablon (Template ID) az érintésvédelmi kérésekhez, címzett: mernok@villkiv.hu.

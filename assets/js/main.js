@@ -239,18 +239,17 @@
     }
     updateCount();
 
-    // Végpont: 1) az action attribútumban megadott teljes (https://…) URL, pl. Formspree, vagy
-    // 2) Netlify Forms – de csak Netlify-tárhelyen (data-netlify-hosts), mert máshol
-    //    egy POST-ra adott 200-as válasz is hamis sikert jelezne.
-    // A relatív action (/koszonjuk) a JS nélküli Netlify-beküldés köszönőoldala, nem végpont.
+    // Végpont:
+    // 1) EmailJS – ha a <form> data-emailjs-* attribútumai ki vannak töltve
+    //    (public key, service ID, template ID; ezek nyilvánosak, nem titkosak);
+    // 2) az action attribútumban megadott teljes https:// URL (pl. Formspree).
+    // Egyik sincs → az űrlap hibát jelez, és sosem mutat hamis sikert.
+    const EMAILJS_URL = 'https://api.emailjs.com/api/v1.0/email/send';
     const endpoint = () => {
+      const { emailjsPublicKey: key, emailjsService: service, emailjsTemplate: template } = form.dataset;
+      if (key && service && template) return { url: EMAILJS_URL, emailjs: { key, service, template } };
       const action = (form.getAttribute('action') || '').trim();
-      if (/^https?:\/\//.test(action)) return { url: action, netlify: false };
-      if (form.dataset.netlify === 'true') {
-        const hosts = (form.dataset.netlifyHosts || 'netlify.app').split(/\s+/).filter(Boolean);
-        const host = location.hostname;
-        if (hosts.some((h) => host === h || host.endsWith(`.${h}`))) return { url: '/', netlify: true };
-      }
+      if (/^https?:\/\//.test(action)) return { url: action };
       return null;
     };
 
@@ -290,7 +289,11 @@
         return;
       }
 
-      // A _gotcha spamcsapda mezőt a szerveroldal értékeli ki (Netlify, Formspree).
+      // Spamcsapda: valódi látogató nem tölti ki. Ilyenkor nem küldünk, és sikert sem jelzünk.
+      if (form.elements._gotcha && form.elements._gotcha.value) {
+        showFailure('Az üzenetet a rendszer automatikusnak ítélte.');
+        return;
+      }
 
       setSending(true);
       status.className = 'form__status is-sending';
@@ -305,19 +308,29 @@
         ['nev', 'telefon', 'email', 'telepules', 'uzenet', 'fogyasztas'].forEach((k) => {
           if (data.has(k)) data.set(k, String(data.get(k)).trim());
         });
-        const response = await fetch(target.url, target.netlify
-          ? {
-              method: 'POST',
-              body: new URLSearchParams(data).toString(),
-              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-              signal: controller.signal,
-            }
-          : {
-              method: 'POST',
-              body: data,
-              headers: { Accept: 'application/json' },
-              signal: controller.signal,
-            });
+        let request;
+        if (target.emailjs) {
+          // Az EmailJS-sablon változói: a mezők nevei + oldal (honnan jött) + reply_to
+          const params = {};
+          data.forEach((value, key) => {
+            if (!key.startsWith('_')) params[key] = String(value);
+          });
+          params.oldal = location.href.split('#')[0];
+          params.reply_to = params.email || '';
+          request = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              service_id: target.emailjs.service,
+              template_id: target.emailjs.template,
+              user_id: target.emailjs.key,
+              template_params: params,
+            }),
+          };
+        } else {
+          request = { method: 'POST', body: data, headers: { Accept: 'application/json' } };
+        }
+        const response = await fetch(target.url, { ...request, signal: controller.signal });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
         // Csak igazolt továbbítás után irányítunk a köszönőoldalra

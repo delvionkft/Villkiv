@@ -331,7 +331,7 @@ await test('hibás telefonszám és e-mail egyértelmű üzenetet kap; javítás
   await context.close();
 });
 
-await test('bekötetlen űrlap (üres action): hibaállapot, SOHA nem mutat sikert', async () => {
+await test('bekötetlen űrlap (nincs EmailJS-azonosító): hibaállapot, SOHA nem mutat sikert', async () => {
   const { page, context } = await open({ width: 1280, height: 800 });
   await fill(page);
   await page.click('.form__submit');
@@ -346,22 +346,35 @@ await test('bekötetlen űrlap (üres action): hibaállapot, SOHA nem mutat sike
   await context.close();
 });
 
-async function withEndpoint(handler, run) {
+const EMAILJS = 'https://api.emailjs.com/api/v1.0/email/send';
+const EMAILJS_IDS = { emailjsPublicKey: 'pub_teszt', emailjsService: 'service_teszt', emailjsTemplate: 'template_teszt' };
+
+// Alapból EmailJS-módban köti be az űrlapot (ez az éles beállítás);
+// mode: 'action' esetén egy teljes https:// action URL-re küld (pl. Formspree).
+async function withEndpoint(handler, run, { mode = 'emailjs' } = {}) {
   const { page, context } = await open({ width: 390, height: 844 });
-  const endpoint = 'https://urlap.example.test/f/teszt';
-  await page.evaluate((u) => document.getElementById('ajanlat-urlap').setAttribute('action', u), endpoint);
+  const endpoint = mode === 'emailjs' ? EMAILJS : 'https://urlap.example.test/f/teszt';
+  await page.evaluate(
+    ({ mode, endpoint, ids }) => {
+      const form = document.getElementById('ajanlat-urlap');
+      if (mode === 'emailjs') Object.assign(form.dataset, ids);
+      else form.setAttribute('action', endpoint);
+    },
+    { mode, endpoint, ids: EMAILJS_IDS },
+  );
   const posts = [];
   await page.route(endpoint, async (route) => {
-    posts.push(route.request().postData() || '');
+    const req = route.request();
+    posts.push({ body: req.postData() || '', type: req.headers()['content-type'] || '' });
     await handler(route);
   });
   await run(page, posts);
   await context.close();
 }
 
-await test('sikeres továbbítás (HTTP 200): átirányítás a köszönőoldalra, adatok a kérésben', async () => {
+await test('EmailJS: sikeres küldés (HTTP 200) → köszönőoldal; a kérés JSON-törzse helyes', async () => {
   await withEndpoint(
-    (route) => route.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true}' }),
+    (route) => route.fulfill({ status: 200, contentType: 'text/plain', body: 'OK' }),
     async (page, posts) => {
       await page.click('text=Napelemes rendszerre kérek ajánlatot');
       await fill(page);
@@ -370,17 +383,77 @@ await test('sikeres továbbítás (HTTP 200): átirányítás a köszönőoldalr
       const h1 = await page.textContent('h1');
       assert(/Köszönjük/.test(h1), `köszönőoldal címe: ${h1}`);
       assert(posts.length === 1, `kérések: ${posts.length}`);
-      for (const needle of ['name="szolgaltatas"', 'napelem', 'Teszt Elek', '+36 30 123 4567', 'teszt@pelda.hu', 'Kecskemét', 'name="fogyasztas"', '3 500 kWh']) {
-        assert(posts[0].includes(needle), `hiányzik a kérésből: ${needle}`);
+      assert(posts[0].type.includes('application/json'), `típus: ${posts[0].type}`);
+      const b = JSON.parse(posts[0].body);
+      assert(b.service_id === 'service_teszt' && b.template_id === 'template_teszt' && b.user_id === 'pub_teszt', `azonosítók: ${posts[0].body}`);
+      assert(!('accessToken' in b), 'privát kulcs a kérésben');
+      const t = b.template_params;
+      const expected = { nev: 'Teszt Elek', telefon: '+36 30 123 4567', email: 'teszt@pelda.hu', telepules: 'Kecskemét', fogyasztas: '3 500 kWh', uzenet: 'Délre néző cseréptető, klíma jön.', szolgaltatas: 'napelem', reply_to: 'teszt@pelda.hu' };
+      for (const [k, v] of Object.entries(expected)) assert(t[k] === v, `${k}: ${t[k]}`);
+      assert(/Új napelemes ajánlatkérés/.test(t.targy), `tárgy: ${t.targy}`);
+      assert(/^http:\/\/localhost:\d+\/$/.test(t.oldal), `oldal: ${t.oldal}`);
+      assert(!Object.keys(t).some((k) => k.startsWith('_')), `belső mező a sablonban: ${Object.keys(t)}`);
+    },
+  );
+});
+
+await test('EmailJS: elutasított kérés (HTTP 400, pl. rossz sablon) → hibaállapot, nincs átirányítás', async () => {
+  await withEndpoint(
+    (route) => route.fulfill({ status: 400, contentType: 'text/plain', body: 'The template ID is invalid' }),
+    async (page, posts) => {
+      await fill(page);
+      await page.click('.form__submit');
+      await page.waitForSelector('.form__status.is-error');
+      assert(posts.length === 1 && !page.url().includes('koszonjuk'), `kérések: ${posts.length}, url: ${page.url()}`);
+    },
+  );
+});
+
+await test('spamcsapda kitöltve: nincs kérés, nincs siker', async () => {
+  await withEndpoint(
+    (route) => route.fulfill({ status: 200, body: 'OK' }),
+    async (page, posts) => {
+      await fill(page);
+      await page.evaluate(() => { document.getElementById('weboldal').value = 'http://spam.example'; });
+      await page.click('.form__submit');
+      await page.waitForSelector('.form__status.is-error');
+      assert(posts.length === 0 && !page.url().includes('koszonjuk'), `kérések: ${posts.length}`);
+    },
+  );
+});
+
+await test('részleges EmailJS-beállítás (hiányzó sablon) nem kapcsol be, nincs hamis siker', async () => {
+  const { page, context } = await open({ width: 1280, height: 800 });
+  let posted = 0;
+  await page.route(EMAILJS, (route) => { posted++; return route.fulfill({ status: 200, body: 'OK' }); });
+  await page.evaluate(() => Object.assign(document.getElementById('ajanlat-urlap').dataset, { emailjsPublicKey: 'pub', emailjsService: 'svc' }));
+  await fill(page);
+  await page.click('.form__submit');
+  const status = await page.textContent('.form__status');
+  assert(/nincs bekötve/.test(status) && posted === 0 && !page.url().includes('koszonjuk'), `állapot: ${status}, kérések: ${posted}`);
+  await context.close();
+});
+
+await test('tartalék végpont (https:// action): FormData-küldés, 200 → köszönőoldal', async () => {
+  await withEndpoint(
+    (route) => route.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true}' }),
+    async (page, posts) => {
+      await fill(page);
+      await page.click('.form__submit');
+      await page.waitForURL(/koszonjuk\.html\?szolgaltatas=napelem$/);
+      assert(posts.length === 1 && posts[0].type.includes('multipart/form-data'), `típus: ${posts[0]?.type}`);
+      for (const needle of ['name="szolgaltatas"', 'napelem', 'Teszt Elek', 'name="fogyasztas"', '3 500 kWh']) {
+        assert(posts[0].body.includes(needle), `hiányzik a kérésből: ${needle}`);
       }
     },
+    { mode: 'action' },
   );
 });
 
 await test('szerverhiba (HTTP 500): hibaállapot, űrlap és adatok megmaradnak, újraküldhető', async () => {
   let n = 0;
   await withEndpoint(
-    (route) => (n++ === 0 ? route.fulfill({ status: 500, body: 'hiba' }) : route.fulfill({ status: 200, body: '{}' })),
+    (route) => (n++ === 0 ? route.fulfill({ status: 500, body: 'hiba' }) : route.fulfill({ status: 200, body: 'OK' })),
     async (page, posts) => {
       await fill(page);
       await page.click('.form__submit');
@@ -389,8 +462,9 @@ await test('szerverhiba (HTTP 500): hibaállapot, űrlap és adatok megmaradnak,
         done: location.pathname.endsWith('koszonjuk.html'),
         formVisible: !document.getElementById('ajanlat-urlap').hidden,
         btn: document.querySelector('.form__submit').disabled,
+        kept: document.getElementById('nev').value,
       }));
-      assert(!s.done && s.formVisible && !s.btn, JSON.stringify(s));
+      assert(!s.done && s.formVisible && !s.btn && s.kept === 'Teszt Elek', JSON.stringify(s));
       await page.click('.form__submit');
       await page.waitForURL(/koszonjuk\.html/);
       assert(posts.length === 2, `kérések: ${posts.length}`);
@@ -414,7 +488,7 @@ await test('küldés közben a gomb letiltva, dupla kattintás egy kérést kül
   await withEndpoint(
     async (route) => {
       await new Promise((r) => setTimeout(r, 700));
-      await route.fulfill({ status: 200, body: '{}' });
+      await route.fulfill({ status: 200, body: 'OK' });
     },
     async (page, posts) => {
       await fill(page);
@@ -428,49 +502,9 @@ await test('küldés közben a gomb letiltva, dupla kattintás egy kérést kül
   );
 });
 
-async function onFakeHost(host, onPost) {
-  const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
-  await context.route(`https://${host}/**`, async (route) => {
-    const req = route.request();
-    if (req.method() === 'POST') return onPost(route, req);
-    const path = new URL(req.url()).pathname.replace(/^\//, '');
-    const response = await route.fetch({ url: BASE + path });
-    return route.fulfill({ response });
-  });
-  const page = await context.newPage();
-  await page.goto(`https://${host}/`, { waitUntil: 'networkidle' });
-  return { page, context };
-}
-
-await test('Netlify-tárhelyen a Netlify Forms fogadja a beküldést (form-name, urlencoded)', async () => {
-  const posts = [];
-  const { page, context } = await onFakeHost('villkiv-teszt.netlify.app', (route, req) => {
-    posts.push({ url: req.url(), body: req.postData() || '', type: req.headers()['content-type'] || '' });
-    return route.fulfill({ status: 200, contentType: 'text/html', body: '<p>ok</p>' });
-  });
-  await fill(page);
-  await page.click('.form__submit');
-  await page.waitForURL(/koszonjuk\.html/);
-  assert(posts.length === 1, `kérések: ${posts.length}`);
-  const p = posts[0];
-  assert(new URL(p.url).pathname === '/', `végpont: ${p.url}`);
-  assert(p.type.includes('application/x-www-form-urlencoded'), `típus: ${p.type}`);
-  const q = new URLSearchParams(p.body);
-  assert(q.get('form-name') === 'ajanlatkeres' && q.get('szolgaltatas') === 'napelem' && q.get('nev') === 'Teszt Elek', `törzs: ${p.body}`);
-  await context.close();
-});
-
-await test('ismeretlen tárhelyen a Netlify-mód nem kapcsol be, nincs hamis siker', async () => {
-  let posted = 0;
-  const { page, context } = await onFakeHost('pelda-tarhely.hu', (route) => {
-    posted++;
-    return route.fulfill({ status: 200, body: 'ok' });
-  });
-  await fill(page);
-  await page.click('.form__submit');
-  const status = await page.textContent('.form__status');
-  assert(/nincs bekötve/.test(status) && posted === 0 && !page.url().includes('koszonjuk'), `állapot: ${status}, kérések: ${posted}`);
-  await context.close();
+await test('éles index.html: nincs privát kulcs a forrásban', async () => {
+  const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  assert(!/accessToken|private[_-]?key/i.test(html.replace(/<!--[\s\S]*?-->/g, '')), 'privát kulcsra utaló szöveg az oldalban');
 });
 
 console.log('\nKöszönőoldal');
@@ -502,6 +536,61 @@ await test('köszönőoldal: noindex, nincs WCAG-hiba, nincs vízszintes görget
     }
     await context.close();
   }
+});
+
+console.log('\nJogi oldalak');
+const LEGAL = ['adatvedelem.html', 'cookie.html', 'impresszum.html'];
+await test('a lábléc linkjei a jogi oldalakra visznek, az űrlap az adatkezelésre hivatkozik', async () => {
+  const { page, context } = await open({ width: 1280, height: 800 });
+  const links = await page.evaluate(() => ({
+    footer: [...document.querySelectorAll('.site-footer__bottom a')].map((a) => a.getAttribute('href')),
+    form: document.querySelector('.form__legal a')?.getAttribute('href'),
+  }));
+  for (const f of LEGAL) assert(links.footer.includes(f), `hiányzó lábléclink: ${f} (${links.footer})`);
+  assert(links.form === 'adatvedelem.html', `űrlap hivatkozás: ${links.form}`);
+  await context.close();
+});
+
+for (const file of LEGAL) {
+  await test(`${file}: noindex, egy h1, cégadatok, nincs WCAG-hiba és vízszintes görgetés, hibátlan linkek`, async () => {
+    for (const width of [320, 1440]) {
+      const { page, context, errors } = await open({ width, height: 900 }, { url: BASE + file, reducedMotion: 'reduce' });
+      const r = await page.evaluate(() => ({
+        robots: document.querySelector('meta[name="robots"]')?.content,
+        h1: document.querySelectorAll('h1').length,
+        overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth,
+        text: document.querySelector('main').innerText,
+        footer: document.querySelector('.site-footer')?.innerText || '',
+        local: [...document.querySelectorAll('a[href]')].map((a) => a.getAttribute('href')).filter((h) => !/^(https?:|mailto:|tel:)/.test(h)),
+      }));
+      assert(r.robots === 'noindex' && r.h1 === 1 && !r.overflow, JSON.stringify({ ...r, text: undefined, footer: undefined, local: undefined }));
+      assert(/VILLKIV Mérnökiroda Kft\./.test(r.footer) && /32746031-2-04/.test(r.footer), 'hiányos lábléc');
+      if (file !== 'cookie.html') {
+        for (const needle of ['32746031-2-04', '04 09 017656', '5630 Békés']) assert(r.text.includes(needle), `hiányzik: ${needle}`);
+      }
+      // Belső linkek: létező oldal, és ha horgony, létező szakasz a főoldalon
+      for (const href of new Set(r.local)) {
+        const u = new URL(href, BASE + file);
+        const res = await page.request.get(u.origin + u.pathname);
+        assert(res.ok(), `törött link: ${href}`);
+        if (u.hash && u.pathname === '/') {
+          const html = await res.text();
+          assert(html.includes(`id="${u.hash.slice(1)}"`), `nincs ilyen szakasz: ${href}`);
+        }
+      }
+      await axe(page, `${file} ${width}px`);
+      await page.screenshot({ path: `${OUT}${file.replace('.html', '')}-${width}.png`, fullPage: true });
+      assert(errors.length === 0, errors.join(' | '));
+      await context.close();
+    }
+  });
+}
+
+await test('az aloldalak lábléce megegyezik a főoldaléval (csak a linkek alakja tér el)', async () => {
+  const norm = (h) => h.replace(/href="\.\/#?/g, 'href="#').replace(/href="#"/g, 'href="#top"').replace(/alt="[^"]*"/g, '').replace(/\s+/g, ' ');
+  const read = async (f) => (await readFile(new URL(`../${f}`, import.meta.url), 'utf8')).match(/<footer[\s\S]*?<\/footer>/)[0];
+  const main = norm(await read('index.html'));
+  for (const f of [...LEGAL, 'koszonjuk.html']) assert(norm(await read(f)) === main, `${f}: eltérő lábléc – futtasd: npm run pages`);
 });
 
 console.log('\nGörgetéskövetés');
@@ -644,8 +733,12 @@ await test('JavaScript nélkül minden tartalom és a menü látható', async ()
   const s = await page.evaluate(() => ({
     nav: getComputedStyle(document.getElementById('fomenu')).display,
     hidden: [...document.querySelectorAll('[data-reveal]')].filter((e) => getComputedStyle(e).opacity !== '1').length,
+    submit: getComputedStyle(document.querySelector('.form__submit')).display,
+    notice: document.querySelector('.form__noscript')?.offsetHeight || 0,
   }));
   assert(s.nav !== 'none' && s.hidden === 0, JSON.stringify(s));
+  // JS nélkül nem tud küldeni: a gomb rejtve, helyette elérhetőség
+  assert(s.submit === 'none' && s.notice > 0, `küldés gomb: ${s.submit}, értesítés: ${s.notice}px`);
   await page.screenshot({ path: `${OUT}js-nelkul-390.png` });
   await context.close();
 });
