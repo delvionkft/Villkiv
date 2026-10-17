@@ -17,13 +17,16 @@ const footer = pick(/  <footer class="site-footer">[\s\S]*?<\/footer>\n/, 'lábl
   .replace(/href="#([a-z-]+)"/g, 'href="./#$1"')
   .replace('alt="VILLKIV logó – az oldal teteje"', 'alt="VILLKIV logó – vissza a főoldalra"');
 
+// A Meta Pixel ID-t is a főoldalról vesszük át, hogy egy helyen kelljen beírni
+const pixelId = (index.match(/<html[^>]*data-meta-pixel="([^"]*)"/) || [])[1] ?? '';
+
 const meta = (src, key) => (src.match(new RegExp(`<!-- ${key}: (.*?) -->`)) || [])[1] || '';
 
 for (const file of (await readdir(path.join(ROOT, 'pages'))).filter((f) => f.endsWith('.html'))) {
   const src = await readFile(path.join(ROOT, 'pages', file), 'utf8');
   const body = src.replace(/^<!-- [a-z]+: .*? -->\n/gm, '');
   const html = `<!doctype html>
-<html lang="hu">
+<html lang="hu" data-meta-pixel="${pixelId}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">

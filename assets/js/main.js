@@ -2,6 +2,7 @@
   'use strict';
 
   const root = document.documentElement;
+  const LEAD_KEY = 'villkiv-lead';
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const scrollBehavior = () => (reduceMotion.matches ? 'auto' : 'smooth');
 
@@ -124,7 +125,10 @@
         !pointsSet || pointsSet.hidden || !pointInputs.some(pointInvalid)
           ? ''
           : 'A darabszámot egész számmal add meg (dugalj, lámpa, kapcsoló: 0–999, elosztó: 0–99).',
+      adatkezeles: () =>
+        form.elements.adatkezeles.checked ? '' : 'Jelöld be, hogy elolvastad az adatkezelési tájékoztatót.',
     };
+    if (!form.elements.adatkezeles) delete rules.adatkezeles;
     // Egyszolgáltatásos oldalon (rejtett szolgaltatas mező) nincs mit választani
     if (!form.querySelector('input[type="radio"][name="szolgaltatas"]')) delete rules.szolgaltatas;
 
@@ -138,6 +142,7 @@
       telepules: 'Ingatlan települése',
       uzenet: 'Rövid üzenet',
       pontok: 'Mérési pontok',
+      adatkezeles: 'Adatkezelési tájékoztató',
     };
 
     const touched = new Set();
@@ -202,6 +207,8 @@
     form.addEventListener('focusout', (e) => {
       const name = POINT_NAMES.includes(e.target.name) ? 'pontok' : e.target.name;
       if (!rules[name] || name === 'szolgaltatas') return;
+      // A jelölőnégyzetet csak beküldési kísérlet után jelezzük hibásnak, puszta átlépéskor nem
+      if (e.target.type === 'checkbox' && !touched.has(name)) return;
       if (e.target.value !== '' || e.target.validity?.badInput || touched.has(name)) {
         touched.add(name);
         validateField(name);
@@ -341,6 +348,8 @@
           form.querySelector('input[type="hidden"][name="szolgaltatas"]')?.value ||
           '';
         const next = form.dataset.success || 'koszonjuk.html';
+        // A köszönőoldal csak ezzel a jelzéssel számol konverziót (közvetlen megnyitásnál nem)
+        try { sessionStorage.setItem(LEAD_KEY, '1'); } catch { /* privát mód: konverzió nélkül */ }
         location.assign(service ? `${next}?szolgaltatas=${encodeURIComponent(service)}` : next);
       } catch (err) {
         const timedOut = err && err.name === 'AbortError';
@@ -509,6 +518,135 @@
     if (SERVICES.includes(chosen)) {
       tips.forEach((t) => { t.hidden = !show.includes(t.dataset.tip); });
     }
+  }
+
+  /* ---------------------------------------------------------------------
+     Sütisáv és Meta Pixel
+     A Pixel ID a <html data-meta-pixel> attribútumban van. Üresen nincs se
+     Pixel, se sütisáv. Kitöltve a Pixel CSAK „Elfogadom” után töltődik be;
+     a döntést 180 napig őrizzük, a láblécben bármikor módosítható.
+     --------------------------------------------------------------------- */
+  const PIXEL_ID = (root.dataset.metaPixel || '').trim();
+  const CONSENT_KEY = 'villkiv-suti';
+  const CONSENT_MAX_AGE = 180 * 24 * 60 * 60 * 1000;
+
+  // A köszönőoldalon a konverzió jelzését azonnal felhasználjuk, hogy frissítéskor ne számoljon újra
+  let leadPending = false;
+  if (document.body.classList.contains('page-thanks')) {
+    try {
+      leadPending = sessionStorage.getItem(LEAD_KEY) === '1';
+      sessionStorage.removeItem(LEAD_KEY);
+    } catch { /* tárolás nélkül nincs konverzió */ }
+  }
+
+  const readConsent = () => {
+    try {
+      const c = JSON.parse(localStorage.getItem(CONSENT_KEY));
+      if (c && c.v === 1 && Date.now() - c.t < CONSENT_MAX_AGE) return c.marketing ? 'granted' : 'denied';
+    } catch { /* nincs vagy sérült: újra megkérdezzük */ }
+    return null;
+  };
+  const saveConsent = (marketing) => {
+    try {
+      localStorage.setItem(CONSENT_KEY, JSON.stringify({ v: 1, marketing, t: Date.now() }));
+    } catch { /* tárolás nélkül a következő oldalon újra kérdezünk */ }
+  };
+
+  const loadPixel = () => {
+    if (!/^\d{6,20}$/.test(PIXEL_ID) || window.fbq) return;
+    // A Meta hivatalos betöltőkódja, olvashatóan
+    const fbq = function () {
+      if (fbq.callMethod) fbq.callMethod.apply(fbq, arguments);
+      else fbq.queue.push(arguments);
+    };
+    fbq.push = fbq;
+    fbq.loaded = true;
+    fbq.version = '2.0';
+    fbq.queue = [];
+    window.fbq = fbq;
+    if (!window._fbq) window._fbq = fbq;
+    const script = document.createElement('script');
+    script.async = true;
+    script.src = 'https://connect.facebook.net/en_US/fbevents.js';
+    document.head.append(script);
+    // Automatikus eseményfelismerés ki: csak az általunk küldött eseményeket mérjük
+    fbq('set', 'autoConfig', false, PIXEL_ID);
+    fbq('init', PIXEL_ID);
+    fbq('track', 'PageView');
+    if (leadPending) fbq('track', 'Lead');
+  };
+
+  // Visszavonáskor a Meta első féltől származó sütijeit is töröljük (minden domainszinten)
+  const clearPixelCookies = () => {
+    const parts = location.hostname.split('.');
+    const domains = [''];
+    for (let i = 0; i < parts.length - 1; i++) domains.push(`; domain=.${parts.slice(i).join('.')}`);
+    ['_fbp', '_fbc'].forEach((name) => {
+      domains.forEach((d) => { document.cookie = `${name}=; Max-Age=0; path=/${d}`; });
+    });
+  };
+
+  if (PIXEL_ID) {
+    let banner = null;
+    let opener = null;
+
+    const closeBanner = () => {
+      if (!banner) return;
+      const hadFocus = banner.contains(document.activeElement);
+      banner.hidden = true;
+      if (hadFocus && opener) opener.focus();
+      opener = null;
+    };
+
+    const decide = (marketing) => {
+      const before = readConsent();
+      saveConsent(marketing);
+      closeBanner();
+      if (marketing) loadPixel();
+      else if (before === 'granted' || window.fbq) {
+        // A már betöltött Pixelt csak újratöltéssel lehet leállítani
+        clearPixelCookies();
+        location.reload();
+      }
+    };
+
+    const buildBanner = () => {
+      banner = document.createElement('aside');
+      banner.className = 'consent';
+      banner.setAttribute('aria-labelledby', 'suti-cim');
+      banner.innerHTML = `
+        <div class="consent__inner">
+          <div class="consent__text">
+            <p class="consent__title" id="suti-cim">Sütik</p>
+            <p>A hirdetéseink méréséhez a Meta Pixelt használnánk, ami sütiket helyez el. Csak akkor kapcsoljuk be, ha elfogadod – az oldal nélküle is teljesen működik. <a href="cookie.html">Részletek</a></p>
+          </div>
+          <div class="consent__actions">
+            <button class="consent__btn" type="button" data-consent="deny">Elutasítom</button>
+            <button class="consent__btn" type="button" data-consent="grant">Elfogadom</button>
+          </div>
+        </div>`;
+      banner.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-consent]');
+        if (btn) decide(btn.dataset.consent === 'grant');
+      });
+      document.body.append(banner);
+    };
+
+    const openBanner = (from) => {
+      if (!banner) buildBanner();
+      opener = from || null;
+      banner.hidden = false;
+      if (from) banner.querySelector('[data-consent]').focus();
+    };
+
+    document.querySelectorAll('[data-consent-only]').forEach((el) => { el.hidden = false; });
+    document.querySelectorAll('[data-consent-open]').forEach((btn) => {
+      btn.addEventListener('click', () => openBanner(btn));
+    });
+
+    const consent = readConsent();
+    if (consent === 'granted') loadPixel();
+    else if (consent === null) openBanner();
   }
 
   document.querySelectorAll('[data-year]').forEach((el) => {

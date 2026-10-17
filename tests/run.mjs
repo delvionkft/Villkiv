@@ -289,9 +289,10 @@ await test('egyszolgáltatásos űrlap: nincs szolgáltatásválasztó, a szolg�
   await context.close();
 });
 
-async function fill(page, overrides = {}) {
+async function fill(page, { adatkezeles = true, ...overrides } = {}) {
   const data = { nev: 'Teszt Elek', telefon: '+36 30 123 4567', email: 'teszt@pelda.hu', telepules: 'Kecskemét', fogyasztas: '3 500 kWh', uzenet: 'Délre néző cseréptető, klíma jön.', ...overrides };
   for (const [k, v] of Object.entries(data)) await page.fill(`#${k}`, v);
+  if (adatkezeles) await page.check('#adatkezeles');
 }
 
 await test('üres beküldés: hibalista fókuszban, mezők jelölve, nincs kérés', async () => {
@@ -307,8 +308,8 @@ await test('üres beküldés: hibalista fókuszban, mezők jelölve, nincs kér�
     done: location.pathname.endsWith('koszonjuk.html'),
   }));
   assert(s.summaryVisible && s.focus === 'urlap-hibak', 'a hibalista nem látszik / nincs fókuszban');
-  assert(s.items === 4, `hibák száma: ${s.items} (4 kötelező mező)`);
-  assert(['nev', 'telefon', 'email', 'telepules'].every((id) => s.invalid.includes(id)), `aria-invalid: ${s.invalid}`);
+  assert(s.items === 5, `hibák száma: ${s.items} (4 kötelező mező + adatkezelési jelölőnégyzet)`);
+  assert(['nev', 'telefon', 'email', 'telepules', 'adatkezeles'].every((id) => s.invalid.includes(id)), `aria-invalid: ${s.invalid}`);
   assert(!s.done && requests === 0, 'sikeres állapot vagy kérés hibás űrlapnál');
   // A hibalista linkje a mezőre visz
   await page.click('#urlap-hibak a[href="#telefon"]');
@@ -388,11 +389,45 @@ await test('EmailJS: sikeres küldés (HTTP 200) → köszönőoldal; a kérés 
       assert(b.service_id === 'service_teszt' && b.template_id === 'template_teszt' && b.user_id === 'pub_teszt', `azonosítók: ${posts[0].body}`);
       assert(!('accessToken' in b), 'privát kulcs a kérésben');
       const t = b.template_params;
-      const expected = { nev: 'Teszt Elek', telefon: '+36 30 123 4567', email: 'teszt@pelda.hu', telepules: 'Kecskemét', fogyasztas: '3 500 kWh', uzenet: 'Délre néző cseréptető, klíma jön.', szolgaltatas: 'napelem', reply_to: 'teszt@pelda.hu' };
+      const expected = { adatkezeles: 'tudomásul vette', nev: 'Teszt Elek', telefon: '+36 30 123 4567', email: 'teszt@pelda.hu', telepules: 'Kecskemét', fogyasztas: '3 500 kWh', uzenet: 'Délre néző cseréptető, klíma jön.', szolgaltatas: 'napelem', reply_to: 'teszt@pelda.hu' };
       for (const [k, v] of Object.entries(expected)) assert(t[k] === v, `${k}: ${t[k]}`);
       assert(/Új napelemes ajánlatkérés/.test(t.targy), `tárgy: ${t.targy}`);
       assert(/^http:\/\/localhost:\d+\/$/.test(t.oldal), `oldal: ${t.oldal}`);
       assert(!Object.keys(t).some((k) => k.startsWith('_')), `belső mező a sablonban: ${Object.keys(t)}`);
+    },
+  );
+});
+
+await test('adatkezelési jelölőnégyzet nélkül nem küld; bejelölés után eltűnik a hiba és elküldhető', async () => {
+  await withEndpoint(
+    (route) => route.fulfill({ status: 200, body: 'OK' }),
+    async (page, posts) => {
+      await fill(page, { adatkezeles: false });
+      // Puszta átlépéskor még nem jelez hibát
+      await page.focus('#adatkezeles');
+      await page.keyboard.press('Tab');
+      assert((await page.textContent('#adatkezeles-hiba')) === '', 'átlépéskor már hibát jelzett');
+      await page.click('.form__submit');
+      const s = await page.evaluate(() => ({
+        error: document.getElementById('adatkezeles-hiba').textContent,
+        invalid: document.getElementById('adatkezeles').getAttribute('aria-invalid'),
+        summary: document.getElementById('urlap-hibak').innerText,
+        required: document.getElementById('adatkezeles').required,
+        label: document.querySelector('label[for="adatkezeles"]').innerText,
+        newTab: document.querySelector('label[for="adatkezeles"] a').target,
+      }));
+      assert(/adatkezelési tájékoztatót/.test(s.error) && s.invalid === 'true' && /Adatkezelési tájékoztató/.test(s.summary), JSON.stringify(s));
+      assert(posts.length === 0 && !page.url().includes('koszonjuk'), `kérések: ${posts.length}`);
+      assert(s.required && /tudomásul vettem/.test(s.label) && !/hozzájárulok/i.test(s.label), `felirat: ${s.label}`);
+      assert(s.newTab === '_blank', 'a tájékoztató linkje nem új lapon nyílik (elveszne a kitöltött űrlap)');
+      // A hibalista linkje a jelölőnégyzetre visz
+      await page.click('#urlap-hibak a[href="#adatkezeles"]');
+      assert((await page.evaluate(() => document.activeElement.id)) === 'adatkezeles', 'a hibalink nem fókuszál');
+      await page.check('#adatkezeles');
+      assert((await page.textContent('#adatkezeles-hiba')) === '', 'bejelölés után megmaradt a hiba');
+      await page.click('.form__submit');
+      await page.waitForURL(/koszonjuk\.html/);
+      assert(posts.length === 1, `kérések: ${posts.length}`);
     },
   );
 });
@@ -538,13 +573,30 @@ await test('köszönőoldal: noindex, nincs WCAG-hiba, nincs vízszintes görget
   }
 });
 
+await test('lábléc: a cégnév nagy, látható díszfelirata a teljes szélességben, kilógás nélkül', async () => {
+  for (const width of [320, 768, 1440, 1920]) {
+    const { page, context } = await open({ width, height: 900 }, { reducedMotion: 'reduce' });
+    const s = await page.evaluate(() => {
+      const el = document.querySelector('.site-footer__wordmark');
+      const r = el.getBoundingClientRect();
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      const t = range.getBoundingClientRect();
+      return { text: el.textContent, hidden: el.getAttribute('aria-hidden'), left: t.left, right: t.right, fill: t.width / innerWidth, height: r.height, vw: innerWidth };
+    });
+    assert(s.text === 'VILLKIV' && s.hidden === 'true', JSON.stringify(s));
+    assert(s.left >= 0 && s.right <= s.vw && s.fill > 0.75, `@${width}px: ${JSON.stringify(s)}`);
+    await context.close();
+  }
+});
+
 console.log('\nJogi oldalak');
 const LEGAL = ['adatvedelem.html', 'cookie.html', 'impresszum.html'];
 await test('a lábléc linkjei a jogi oldalakra visznek, az űrlap az adatkezelésre hivatkozik', async () => {
   const { page, context } = await open({ width: 1280, height: 800 });
   const links = await page.evaluate(() => ({
     footer: [...document.querySelectorAll('.site-footer__bottom a')].map((a) => a.getAttribute('href')),
-    form: document.querySelector('.form__legal a')?.getAttribute('href'),
+    form: document.querySelector('label[for="adatkezeles"] a')?.getAttribute('href'),
   }));
   for (const f of LEGAL) assert(links.footer.includes(f), `hiányzó lábléclink: ${f} (${links.footer})`);
   assert(links.form === 'adatvedelem.html', `űrlap hivatkozás: ${links.form}`);
@@ -591,6 +643,150 @@ await test('az aloldalak lábléce megegyezik a főoldaléval (csak a linkek ala
   const read = async (f) => (await readFile(new URL(`../${f}`, import.meta.url), 'utf8')).match(/<footer[\s\S]*?<\/footer>/)[0];
   const main = norm(await read('index.html'));
   for (const f of [...LEGAL, 'koszonjuk.html']) assert(norm(await read(f)) === main, `${f}: eltérő lábléc – futtasd: npm run pages`);
+});
+
+console.log('\nSütisáv és Meta Pixel');
+const PIXEL = '123456789012345';
+// A Pixel ID-t a kiszolgált HTML-be írjuk; a Meta szkriptjét üres csonkkal helyettesítjük és számoljuk.
+async function openWithPixel(viewport, { url = BASE, id = PIXEL, init } = {}) {
+  const context = await browser.newContext({ viewport, locale: 'hu-HU' });
+  const fb = [];
+  await context.route(/facebook\.(net|com)/, (route) => {
+    fb.push(route.request().url());
+    return route.fulfill({ status: 200, contentType: 'text/javascript', body: '' });
+  });
+  await context.route((u) => u.href.startsWith(BASE) && (u.pathname.endsWith('/') || u.pathname.endsWith('.html')), async (route) => {
+    const res = await route.fetch();
+    const body = (await res.text()).replace('data-meta-pixel=""', `data-meta-pixel="${id}"`);
+    return route.fulfill({ response: res, body });
+  });
+  if (init) await context.addInitScript(init);
+  const page = await context.newPage();
+  await page.goto(url, { waitUntil: 'networkidle' });
+  return { page, context, fb };
+}
+const fbQueue = (page) => page.evaluate(() => (window.fbq ? window.fbq.queue.map((a) => Array.from(a)) : null));
+
+await test('Pixel ID nélkül: nincs sütisáv, nincs Süti-beállítások gomb, nincs Meta-kérés', async () => {
+  for (const url of [BASE, `${BASE}koszonjuk.html`, `${BASE}cookie.html`]) {
+    const { page, context } = await open({ width: 1280, height: 800 }, { url });
+    const s = await page.evaluate(() => ({
+      banner: document.querySelectorAll('.consent').length,
+      btn: document.querySelector('[data-consent-only]')?.hidden,
+      fbq: typeof window.fbq,
+      fb: performance.getEntriesByType('resource').filter((r) => /facebook/.test(r.name)).length,
+    }));
+    assert(s.banner === 0 && s.btn === true && s.fbq === 'undefined' && s.fb === 0, `${url}: ${JSON.stringify(s)}`);
+    await context.close();
+  }
+});
+
+await test('Pixel ID-vel: sütisáv jelenik meg, választás előtt nincs Meta-kérés; az aloldalak is átveszik az ID-t', async () => {
+  const html = await readFile(new URL('../koszonjuk.html', import.meta.url), 'utf8');
+  assert(/<html[^>]*data-meta-pixel=""/.test(html), 'az aloldal nem kapta meg a data-meta-pixel attribútumot (npm run pages)');
+  for (const width of [320, 1440]) {
+    const { page, context, fb } = await openWithPixel({ width, height: 800 });
+    const s = await page.evaluate(() => ({
+      visible: !!document.querySelector('.consent:not([hidden])')?.offsetHeight,
+      buttons: [...document.querySelectorAll('.consent [data-consent]')].map((b) => [b.textContent, getComputedStyle(b).backgroundColor, b.offsetHeight]),
+      overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth,
+      link: document.querySelector('.consent a')?.getAttribute('href'),
+    }));
+    assert(s.visible && !s.overflow && s.link === 'cookie.html', JSON.stringify(s));
+    assert(fb.length === 0 && (await page.evaluate(() => typeof window.fbq)) === 'undefined', `Meta-kérés hozzájárulás előtt: ${fb}`);
+    // Az elutasítás ugyanolyan feltűnő, mint az elfogadás
+    const [deny, grant] = s.buttons;
+    assert(deny[0] === 'Elutasítom' && grant[0] === 'Elfogadom' && deny[1] === grant[1] && deny[2] === grant[2], JSON.stringify(s.buttons));
+    await axe(page, `sütisáv ${width}px`);
+    await page.screenshot({ path: `${OUT}sutisav-${width}.png` });
+    await context.close();
+  }
+});
+
+await test('Elutasítom: nincs Pixel, a döntés megmarad; a láblécből újra megnyitható', async () => {
+  const { page, context, fb } = await openWithPixel({ width: 1280, height: 800 });
+  await page.click('[data-consent="deny"]');
+  assert(await page.locator('.consent').isHidden(), 'a sáv nem tűnt el');
+  await page.reload({ waitUntil: 'networkidle' });
+  const s = await page.evaluate(() => ({ banner: !!document.querySelector('.consent:not([hidden])'), fbq: typeof window.fbq }));
+  assert(!s.banner && s.fbq === 'undefined' && fb.length === 0, JSON.stringify({ ...s, fb }));
+  await page.click('[data-consent-open]');
+  assert(await page.locator('.consent').isVisible(), 'a Süti-beállítások gomb nem nyitja meg a sávot');
+  assert((await page.evaluate(() => document.activeElement.dataset.consent)) === 'deny', 'a fókusz nem került a sávba');
+  await page.click('[data-consent="deny"]');
+  assert((await page.evaluate(() => document.activeElement.hasAttribute('data-consent-open'))), 'a fókusz nem tért vissza a gombra');
+  await context.close();
+});
+
+await test('Elfogadom: Pixel betölt (init + PageView, automatikus események ki), és a következő oldalon is', async () => {
+  const { page, context, fb } = await openWithPixel({ width: 1280, height: 800 });
+  await page.click('[data-consent="grant"]');
+  await page.waitForFunction(() => window.fbq);
+  const q = await fbQueue(page);
+  assert(fb.some((u) => u.includes('connect.facebook.net/en_US/fbevents.js')), `szkript: ${fb}`);
+  assert(JSON.stringify(q) === JSON.stringify([['set', 'autoConfig', false, PIXEL], ['init', PIXEL], ['track', 'PageView']]), JSON.stringify(q));
+  const next = await context.newPage();
+  await next.goto(`${BASE}cookie.html`, { waitUntil: 'networkidle' });
+  const s = await next.evaluate(() => ({ banner: !!document.querySelector('.consent:not([hidden])'), fbq: typeof window.fbq }));
+  assert(!s.banner && s.fbq === 'function', JSON.stringify(s));
+  await context.close();
+});
+
+await test('visszavonás: a Meta-sütik törlődnek, újratöltés után nincs Pixel', async () => {
+  const { page, context, fb } = await openWithPixel({ width: 1280, height: 800 });
+  await page.click('[data-consent="grant"]');
+  await page.waitForFunction(() => window.fbq);
+  await page.evaluate(() => { document.cookie = '_fbp=fb.1.123.456; path=/'; document.cookie = '_fbc=fb.1.123.abc; path=/'; });
+  const before = fb.length;
+  await page.click('[data-consent-open]');
+  await Promise.all([page.waitForEvent('load'), page.click('[data-consent="deny"]')]);
+  await page.waitForLoadState('networkidle');
+  const s = await page.evaluate(() => ({ cookies: document.cookie, fbq: typeof window.fbq, banner: !!document.querySelector('.consent:not([hidden])') }));
+  assert(!/_fbp|_fbc/.test(s.cookies) && s.fbq === 'undefined' && !s.banner && fb.length === before, JSON.stringify({ ...s, fb: fb.length - before }));
+  await context.close();
+});
+
+await test('lejárt (180 napnál régebbi) döntésnél újra megkérdez', async () => {
+  const { page, context } = await openWithPixel({ width: 1280, height: 800 });
+  await page.evaluate(() => localStorage.setItem('villkiv-suti', JSON.stringify({ v: 1, marketing: true, t: Date.now() - 181 * 864e5 })));
+  await page.reload({ waitUntil: 'networkidle' });
+  const s = await page.evaluate(() => ({ banner: !!document.querySelector('.consent:not([hidden])'), fbq: typeof window.fbq }));
+  assert(s.banner && s.fbq === 'undefined', JSON.stringify(s));
+  await context.close();
+});
+
+await test('Lead-esemény: csak valódi beküldés után, egyszer; közvetlen megnyitásnál és frissítésnél nem', async () => {
+  const { page, context } = await openWithPixel({ width: 390, height: 844 });
+  await page.click('[data-consent="grant"]');
+  await page.route(EMAILJS, (route) => route.fulfill({ status: 200, body: 'OK' }));
+  await page.evaluate((ids) => Object.assign(document.getElementById('ajanlat-urlap').dataset, ids), EMAILJS_IDS);
+  await fill(page);
+  await page.click('.form__submit');
+  await page.waitForURL(/koszonjuk\.html/);
+  await page.waitForFunction(() => window.fbq);
+  const q1 = await fbQueue(page);
+  assert(q1.filter((a) => a[1] === 'Lead').length === 1, `beküldés után: ${JSON.stringify(q1)}`);
+  await page.reload({ waitUntil: 'networkidle' });
+  const q2 = await fbQueue(page);
+  assert(q2 && !q2.some((a) => a[1] === 'Lead'), `frissítés után: ${JSON.stringify(q2)}`);
+  const direct = await context.newPage();
+  await direct.goto(`${BASE}koszonjuk.html?szolgaltatas=napelem`, { waitUntil: 'networkidle' });
+  const q3 = await fbQueue(direct);
+  assert(q3 && !q3.some((a) => a[1] === 'Lead'), `közvetlen megnyitás: ${JSON.stringify(q3)}`);
+  await context.close();
+});
+
+await test('ha a köszönőoldalon fogad el először, a Lead akkor is beérkezik', async () => {
+  const { page, context } = await openWithPixel({ width: 390, height: 844 }, {
+    url: `${BASE}koszonjuk.html?szolgaltatas=napelem`,
+    // Az első betöltéskor úgy, mintha épp most küldte volna be az űrlapot
+    init: () => { if (!sessionStorage.getItem('teszt-kesz')) { sessionStorage.setItem('villkiv-lead', '1'); sessionStorage.setItem('teszt-kesz', '1'); } },
+  });
+  assert((await page.evaluate(() => typeof window.fbq)) === 'undefined', 'Pixel hozzájárulás előtt');
+  await page.click('[data-consent="grant"]');
+  const q = await fbQueue(page);
+  assert(q && q.filter((a) => a[1] === 'Lead').length === 1, JSON.stringify(q));
+  await context.close();
 });
 
 console.log('\nGörgetéskövetés');

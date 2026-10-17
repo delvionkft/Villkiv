@@ -24,6 +24,10 @@ for (const file of pageFiles) {
         found.add(`űrlap nincs bekötve – hiányzik: ${missing.join(', ')}`);
       }
     }
+    const pixel = line.match(/<html[^>]*data-meta-pixel="([^"]*)"/);
+    if (pixel && !/^\d{6,20}$/.test(pixel[1].trim())) {
+      found.add(pixel[1].trim() ? `érvénytelen Meta Pixel ID: „${pixel[1]}” (csak számjegy)` : 'Meta Pixel ID nincs megadva (data-meta-pixel)');
+    }
     if (found.size) hits.push(`${file}:${i + 1}: ${[...found].join(' | ')}`);
   });
 }

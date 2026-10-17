@@ -1139,6 +1139,19 @@ legend.field__label { margin-bottom: 10px; }
 
 .form__actions { display: grid; gap: 14px; margin-top: 4px; }
 .form__legal { font-size: 0.8125rem; color: var(--muted); }
+/* Adatkezelési jelölőnégyzet */
+.check { display: flex; align-items: flex-start; gap: 12px; }
+.check__input {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  accent-color: var(--navy-900);
+  cursor: pointer;
+}
+.check__input[aria-invalid="true"] { outline: 2px solid var(--error); outline-offset: 2px; }
+.check__label { font-size: 0.9375rem; line-height: 1.5; color: var(--text); cursor: pointer; padding-top: 1px; }
+.check__label a { color: var(--ink); font-weight: 600; }
 /* JS nélkül az űrlap nem tud küldeni: a gomb helyett elérhetőséget mutatunk. */
 html:not(.js) .form__submit { display: none; }
 .form__noscript {
@@ -1364,6 +1377,79 @@ html:not(.js) .form__submit { display: none; }
   border-top: 1px solid var(--line-dark);
 }
 .site-footer__bottom ul { display: flex; flex-wrap: wrap; gap: 0 20px; }
+.site-footer__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--on-dark);
+  font: inherit;
+  cursor: pointer;
+}
+.site-footer__link:hover { color: var(--yellow); }
+/* A cégnév nagy, díszítő felirata a lábléc alján */
+.site-footer { position: relative; overflow: clip; container-type: inline-size; }
+.site-footer__wordmark {
+  margin: 0 0 -0.2em;
+  padding-inline: clamp(8px, 2cqi, 32px);
+  font-family: var(--font-head);
+  font-size: 22cqi;
+  font-weight: 800;
+  font-stretch: 112%;
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+  text-align: center;
+  white-space: nowrap;
+  color: transparent;
+  background: linear-gradient(180deg, rgba(226, 196, 91, 0.30) 0%, rgba(226, 196, 91, 0.04) 85%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* --------------------------------------------------------------------------
+   Sütisáv (csak ha Meta Pixel ID van megadva)
+   -------------------------------------------------------------------------- */
+.consent {
+  position: fixed;
+  inset: auto clamp(8px, 2vw, 24px) clamp(8px, 2vw, 24px);
+  z-index: 60;
+  max-width: 980px;
+  margin-inline: auto;
+  padding: clamp(16px, 2.4vw, 24px);
+  border: 1px solid rgba(226, 196, 91, 0.35);
+  border-radius: var(--r-lg);
+  background: var(--navy-900);
+  color: #dbe3ee;
+  box-shadow: 0 18px 48px rgba(4, 12, 26, 0.45);
+}
+.consent[hidden] { display: none; }
+.consent__inner { display: grid; gap: 16px; }
+@media (min-width: 760px) {
+  .consent__inner { grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 28px; }
+}
+.consent__text { display: grid; gap: 4px; font-size: 0.9375rem; line-height: 1.5; }
+.consent__title { font-family: var(--font-head); font-weight: 680; font-size: 1.0625rem; color: var(--on-dark); }
+.consent__text a { color: var(--on-dark); font-weight: 600; }
+.consent__actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+/* A két gomb szándékosan egyforma: az elutasítás ugyanolyan könnyű, mint az elfogadás */
+.consent__btn {
+  min-height: 48px;
+  padding: 10px 22px;
+  border: 1px solid var(--on-dark);
+  border-radius: var(--r-md);
+  background: var(--on-dark);
+  color: var(--navy-900);
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.consent__btn:hover { background: var(--yellow); border-color: var(--yellow); }
+.consent__btn:focus-visible { outline: 3px solid var(--yellow); outline-offset: 3px; }
 
 /* --------------------------------------------------------------------------
    Finom megjelenés (csak ha a JS elindult és nincs csökkentett mozgás)
@@ -1378,7 +1464,7 @@ html:not(.js) .form__submit { display: none; }
 }
 
 @media print {
-  .site-header, .contact__form, .deco { display: none; }
+  .site-header, .contact__form, .deco, .consent, .site-footer__wordmark { display: none; }
   .pv, .contact, .site-footer { background: none; color: #000; }
   [data-reveal] { opacity: 1 !important; transform: none !important; }
 }

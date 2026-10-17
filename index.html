@@ -1,9 +1,14 @@
 <!doctype html>
-<html lang="hu">
+<html lang="hu" data-meta-pixel="">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Napelemes rendszerek családi házakra | VILLKIV Mérnökiroda</title>
+  <!--
+    META PIXEL: a <html> elem data-meta-pixel attribútumába írd a Pixel ID-t (csak számjegyek).
+    Üresen: nincs Pixel és nincs sütisáv. Kitöltve: sütisáv jelenik meg, a Pixel CSAK az
+    „Elfogadom” után töltődik be. Az aloldalak az npm run pages futtatásakor átveszik.
+  -->
+  <title>Napelemes rendszerek családi házakra | VILLKIV Mérnökiroda</title>
   <meta name="description" content="Kulcsrakész napelemes rendszerek családi házakra a VILLKIV Mérnökiroda villamosmérnökeitől: felmérés, tervezés, engedélyeztetés, kivitelezés, országosan. 48 órán belül személyre szabott rendszerterv.">
   <meta name="theme-color" content="#0B1E3A">
   <meta property="og:type" content="website">
@@ -481,13 +486,21 @@
             <input type="hidden" name="szolgaltatas" value="napelem">
             <input type="hidden" name="targy" value="Új napelemes ajánlatkérés a weboldalról">
 
+            <div class="field field--check">
+              <div class="check">
+                <input class="check__input" id="adatkezeles" name="adatkezeles" type="checkbox" value="tudomásul vette" required aria-describedby="adatkezeles-hiba">
+                <label class="check__label" for="adatkezeles">Elolvastam és tudomásul vettem az <a href="adatvedelem.html" target="_blank" rel="noopener">adatkezelési tájékoztatót</a>. <span class="req" aria-hidden="true">*</span></label>
+              </div>
+              <p class="field__error" id="adatkezeles-hiba"></p>
+            </div>
+
             <div class="form__actions">
               <button class="btn btn--primary btn--block form__submit" type="submit">
                 <span class="form__submit-label">Ajánlatot kérek</span>
                 <svg class="btn__icon" aria-hidden="true"><use href="#i-arrow"/></svg>
               </button>
               <noscript><p class="form__noscript">Az űrlap küldéséhez JavaScript szükséges. Hívj minket: <a href="tel:+36205043300">+36 20 504 33 00</a>, vagy írj: <a href="mailto:mernok@villkiv.hu">mernok@villkiv.hu</a>.</p></noscript>
-              <p class="form__legal"><span class="req" aria-hidden="true">*</span> Kötelező mező. Az adataidat az ajánlatkérés megválaszolásához használjuk – részletek az <a href="adatvedelem.html">adatkezelési tájékoztatóban</a>.</p>
+              <p class="form__legal"><span class="req" aria-hidden="true">*</span> Kötelező mező. Az adataidat csak az ajánlatkérés megválaszolásához használjuk.</p>
             </div>
 
             <div class="form__status" role="status" aria-live="polite"></div>
@@ -531,8 +544,10 @@
         <li><a href="adatvedelem.html">Adatkezelési tájékoztató</a></li>
         <li><a href="cookie.html">Süti tájékoztató</a></li>
         <li><a href="impresszum.html">Impresszum</a></li>
+        <li data-consent-only hidden><button class="site-footer__link" type="button" data-consent-open>Süti-beállítások</button></li>
       </ul>
     </div>
+    <p class="site-footer__wordmark" aria-hidden="true">VILLKIV</p>
   </footer>
 </body>
 </html>

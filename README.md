@@ -11,7 +11,8 @@ npm run check:placeholders   # kilistáz minden kitöltetlen helyőrzőt (főold
 
 1. **Űrlap bekötése (EmailJS).** Lásd lent. Amíg nincs bekötve, az űrlap hibaüzenetet ad, sikert soha nem mutat.
 2. **Jogi oldalak ellenőrizendő pontjai** (`pages/adatvedelem.html`, `pages/impresszum.html`): megőrzési idő, az e-mail-szolgáltató neve, a tárhelyszolgáltató adatai. Élesítés előtt jogász nézze át.
-3. **Árak.** A 2,5–4 M Ft bruttó (áfával) értendő-e – `ELLENŐRIZENDŐ` megjegyzés az `index.html`-ben.
+3. **Meta Pixel ID.** Lásd lent. Ha mégsem lesz Pixel, a `data-meta-pixel` attribútumot töröld, és a süti- és adatkezelési oldalról vedd ki a Pixelről szóló részt (különben valótlant állítanak).
+4. **Árak.** A 2,5–4 M Ft bruttó (áfával) értendő-e – `ELLENŐRIZENDŐ` megjegyzés az `index.html`-ben.
 
 ## Oldalak
 
@@ -31,7 +32,19 @@ npm run pages    # újragenerálja a gyökérben lévő aloldalakat
 
 A teszt jelez, ha egy aloldal lábléce eltér a főoldalétól.
 
-**Sütik:** az oldal nem használ sütit, analitikát és külső betűtípust, ezért sütisáv nem kell. Ha később analitika vagy beágyazott térkép/videó kerül fel, a sütisáv és a `cookie.html` frissítése kötelező.
+## Meta Pixel és sütisáv
+
+1. A Pixel ID-t (*Meta Events Manager → Adatforrások*, 15–16 számjegy) írd az `index.html` elején a `<html data-meta-pixel="">` attribútumba, majd: `npm run pages` (az aloldalak innen veszik át).
+2. **Events Manager → a Pixel beállításai: kapcsold KI az „Automatic advanced matching” (automatikus speciális egyeztetés) opciót.** Bekapcsolva a Meta-kód az űrlapmezőkből (e-mail, telefon) is gyűjthet, ami ellentmond az adatkezelési tájékoztatónak.
+3. Ellenőrzés: *Events Manager → Test events*. Elfogadás előtt nem jöhet esemény; elfogadás után `PageView`, sikeres ajánlatkérés után a köszönőoldalon egy `Lead`.
+
+Működés:
+- **Üres ID-nél nincs sütisáv és nincs Pixel** – az oldal sütimentes.
+- Kitöltött ID-nél minden oldalon sütisáv jelenik meg. **A Pixel csak az „Elfogadom” után töltődik be**; az „Elutasítom” ugyanolyan gomb, ugyanakkora – ez jogi követelmény, ne változtasd kiemeltebbre az elfogadást.
+- A döntést 180 napig jegyezzük meg (`localStorage`), utána újra kérdezünk. A lábléc *Süti-beállítások* gombjával bármikor módosítható; visszavonáskor a `_fbp`/`_fbc` sütik törlődnek, és az oldal újratölt.
+- `Lead` csak valódi beküldés után, egyszer fut le: a köszönőoldal közvetlen megnyitása vagy frissítése nem számít konverziónak.
+- A kódban az automatikus eseményfelismerés ki van kapcsolva (`autoConfig: false`), csak `PageView` és `Lead` megy.
+- Más mérőkódot (Google Analytics, Tag Manager stb.) csak a sütisávon keresztül, a `cookie.html` és az `adatvedelem.html` frissítésével együtt szabad feltenni.
 
 ## Fotók cseréje
 
@@ -71,6 +84,7 @@ Az űrlap az [EmailJS](https://www.emailjs.com/) szolgáltatáson keresztül kü
      Éves fogyasztás / havi számla: {{fogyasztas}}
      Üzenet: {{uzenet}}
      Szolgáltatás: {{szolgaltatas}}
+     Adatkezelési tájékoztató: {{adatkezeles}}
      Beküldve innen: {{oldal}}
      ```
    → **Template ID**
@@ -122,6 +136,8 @@ A tesztek (Playwright + axe-core) ezeket ellenőrzik:
 - működik a billentyűzetes navigáció és a mobilmenü;
 - a CTA az űrlap első mezőjére viszi a fókuszt;
 - az űrlap minden állapota helyes (üres, hibás, bekötetlen, EmailJS 200 és 400, 500, hálózati hiba, dupla kattintás, spamcsapda), és a kérés törzse a várt sablonváltozókat tartalmazza;
+- az adatkezelési jelölőnégyzet nélkül nem küld;
+- a sütisáv: Pixel ID nélkül nincs; ID-vel elfogadás előtt nincs Meta-kérés, az elutasítás egyenrangú, a döntés megmarad, lejár, visszavonható, és a `Lead` csak valódi beküldés után fut;
 - a jogi oldalak hibátlanok (noindex, WCAG, linkek), és a láblécük megegyezik a főoldaléval;
 - az elrendezésugrás (CLS) lassú képekkel és betűkkel is < 0,02;
 - működik a csökkentett mozgás beállítás és a JavaScript nélküli megjelenítés.

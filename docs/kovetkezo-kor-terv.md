@@ -12,7 +12,7 @@ A gyakori kérdések szekciót kérésre eltávolítottuk.
 ## Döntések
 - A cég vállalja a hibajavítást, a napelemes rendszer tervezését, kivitelezését és az áramszolgáltatói ügyintézést (beépítve).
 - Űrlap-feldolgozó: **EmailJS** (2026-10-17). Amíg a három azonosító nincs beírva, az űrlap hibát jelez, és sosem mutat sikert.
-- Analitika nem kell, ezért sem követőkód, sem sütisáv nem kerül fel.
+- Analitika nem kell. Meta Pixel igen (2026-10-17), kizárólag hozzájárulással, sütisávval.
 
 ## Teendő a következő munkamenet elején
 1. Ellenőrizni, hogy a Canva elérhető-e: `curl -sS -o /dev/null -w "%{http_code}" https://www.canva.com/`. A hálózati engedély új munkamenetben lép életbe.
@@ -52,7 +52,6 @@ A gyakori kérdések szekciót kérésre eltávolítottuk.
 ## Jogi oldalak és EmailJS (2026-10-17)
 - Elkészült: `adatvedelem.html`, `cookie.html`, `impresszum.html` (forrás: `pages/`, generálás: `npm run pages`). A lábléc a valódi cégadatokat mutatja: 5630 Békés, Kossuth Lajos utca 23. B. lház. 2. em. 21., adószám 32746031-2-04, cégjegyzékszám 04 09 017656.
 - Az űrlap EmailJS-en keresztül küld (beállítás: README). Privát kulcs nincs és nem is lehet a frontendben.
-- Sütisáv nem kell: az oldal nem használ sütit, analitikát, külső betűt; az EmailJS-hívás sem állít be sütit.
 - Ellenőrizendő (`npm run check:placeholders` listázza):
   - EmailJS Public Key, Service ID, Template ID;
   - megőrzési idő az adatkezelési tájékoztatóban;
@@ -60,3 +59,9 @@ A gyakori kérdések szekciót kérésre eltávolítottuk.
   - a tárhelyszolgáltató adatai az impresszumban;
   - a megrendelő által küldött „Kft.2025” jelentése (alapítás éve?) – az oldalon nem szerepel.
 - A jogi szövegeket élesítés előtt jogásznak kell átnéznie.
+
+## Ellenőrzőlista-kör (2026-10-17)
+- Adatkezelési jelölőnégyzet az űrlapon („Elolvastam és tudomásul vettem…”), kötelező; nélküle nem küld. Szándékosan nem „hozzájárulok”: az ajánlatkérés jogalapja a szerződés előtti lépés, nem a hozzájárulás.
+- Meta Pixel + sütisáv: a Pixel ID-re vár (`data-meta-pixel`). Az Events Managerben az automatikus speciális egyeztetést ki kell kapcsolni.
+- Lábléc: nagy „VILLKIV” díszfelirat a lábléc alján.
+- Az űrlap helye nem változott: a hero és a footer között van, közvetlenül a footer felett; a hero CTA-ja odavisz.
