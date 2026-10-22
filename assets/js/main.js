@@ -97,6 +97,7 @@
       pointsSet.hidden = !show;
       pointInputs.forEach((i) => { i.disabled = !show; });
     };
+    const MESSAGE_MIN = 10;
     const MESSAGE_MAX = 1000;
     const TIMEOUT_MS = 15000;
 
@@ -120,7 +121,13 @@
           : 'Ellenőrizd az e-mail-címet – például: nev@pelda.hu.';
       },
       telepules: (v) => (clean(v).length >= 2 ? '' : 'Add meg, melyik településen van az ingatlan.'),
-      uzenet: (v) => (v.length <= MESSAGE_MAX ? '' : `Az üzenet legfeljebb ${MESSAGE_MAX} karakter lehet.`),
+      fogyasztas: (v) =>
+        clean(v).length >= 2 ? '' : 'Add meg az éves fogyasztást vagy a havi villanyszámlát – ha nem tudod pontosan, egy becslés is elég.',
+      uzenet: (v) => {
+        if (!clean(v)) return 'Írj pár szót a tetőről vagy az elképzelésedről.';
+        if (clean(v).length < MESSAGE_MIN) return `Írj legalább ${MESSAGE_MIN} karaktert – például a tető típusát vagy tájolását.`;
+        return v.length <= MESSAGE_MAX ? '' : `Az üzenet legfeljebb ${MESSAGE_MAX} karakter lehet.`;
+      },
       pontok: () =>
         !pointsSet || pointsSet.hidden || !pointInputs.some(pointInvalid)
           ? ''
@@ -140,6 +147,7 @@
       telefon: 'Telefonszám',
       email: 'E-mail-cím',
       telepules: 'Ingatlan települése',
+      fogyasztas: 'Éves fogyasztás vagy havi villanyszámla',
       uzenet: 'Rövid üzenet',
       pontok: 'Mérési pontok',
       adatkezeles: 'Adatkezelési tájékoztató',

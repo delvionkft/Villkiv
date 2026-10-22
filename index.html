@@ -466,14 +466,14 @@
             </div>
 
             <div class="field">
-              <label class="field__label" for="fogyasztas">Éves fogyasztás vagy havi villanyszámla <span class="field__opt">(nem kötelező)</span></label>
-              <input class="field__input" id="fogyasztas" name="fogyasztas" type="text" maxlength="60" placeholder="pl. 3 500 kWh vagy 25 000 Ft/hó" aria-describedby="fogyasztas-hiba">
+              <label class="field__label" for="fogyasztas">Éves fogyasztás vagy havi villanyszámla <span class="req" aria-hidden="true">*</span></label>
+              <input class="field__input" id="fogyasztas" name="fogyasztas" type="text" required minlength="2" maxlength="60" placeholder="pl. 3 500 kWh vagy 25 000 Ft/hó" aria-describedby="fogyasztas-hiba">
               <p class="field__error" id="fogyasztas-hiba"></p>
             </div>
 
             <div class="field">
-              <label class="field__label" for="uzenet">Rövid üzenet <span class="field__opt">(nem kötelező)</span></label>
-              <textarea class="field__input field__input--area" id="uzenet" name="uzenet" rows="3" maxlength="1000" aria-describedby="uzenet-pelda uzenet-hiba"></textarea>
+              <label class="field__label" for="uzenet">Rövid üzenet <span class="req" aria-hidden="true">*</span></label>
+              <textarea class="field__input field__input--area" id="uzenet" name="uzenet" rows="3" required minlength="10" maxlength="1000" aria-describedby="uzenet-pelda uzenet-hiba"></textarea>
               <p class="field__hint" id="uzenet-pelda"><span>Pl. a tető típusa, tájolása, vagy hogy klíma, hőszivattyú, autótöltő jön.</span> <span class="field__count" data-count-for="uzenet" aria-hidden="true">0 / 1000</span></p>
               <p class="field__error" id="uzenet-hiba"></p>
             </div>
@@ -500,7 +500,7 @@
                 <svg class="btn__icon" aria-hidden="true"><use href="#i-arrow"/></svg>
               </button>
               <noscript><p class="form__noscript">Az űrlap küldéséhez JavaScript szükséges. Hívj minket: <a href="tel:+36205043300">+36 20 504 33 00</a>, vagy írj: <a href="mailto:mernok@villkiv.hu">mernok@villkiv.hu</a>.</p></noscript>
-              <p class="form__legal"><span class="req" aria-hidden="true">*</span> Kötelező mező. Az adataidat csak az ajánlatkérés megválaszolásához használjuk.</p>
+              <p class="form__legal"><span class="req" aria-hidden="true">*</span> Minden mező kitöltése kötelező. Az adataidat csak az ajánlatkérés megválaszolásához használjuk.</p>
             </div>
 
             <div class="form__status" role="status" aria-live="polite"></div>

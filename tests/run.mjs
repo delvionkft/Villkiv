@@ -321,12 +321,29 @@ await test('üres beküldés: hibalista fókuszban, mezők jelölve, nincs kér�
     done: location.pathname.endsWith('koszonjuk.html'),
   }));
   assert(s.summaryVisible && s.focus === 'urlap-hibak', 'a hibalista nem látszik / nincs fókuszban');
-  assert(s.items === 5, `hibák száma: ${s.items} (4 kötelező mező + adatkezelési jelölőnégyzet)`);
-  assert(['nev', 'telefon', 'email', 'telepules', 'adatkezeles'].every((id) => s.invalid.includes(id)), `aria-invalid: ${s.invalid}`);
+  assert(s.items === 7, `hibák száma: ${s.items} (6 kötelező mező + adatkezelési jelölőnégyzet)`);
+  assert(['nev', 'telefon', 'email', 'telepules', 'fogyasztas', 'uzenet', 'adatkezeles'].every((id) => s.invalid.includes(id)), `aria-invalid: ${s.invalid}`);
   assert(!s.done && requests === 0, 'sikeres állapot vagy kérés hibás űrlapnál');
   // A hibalista linkje a mezőre visz
   await page.click('#urlap-hibak a[href="#telefon"]');
   assert((await page.evaluate(() => document.activeElement.id)) === 'telefon', 'a hibalink nem fókuszál');
+  await context.close();
+});
+
+await test('minden látható mező kötelező: required, csillag, nincs „nem kötelező” felirat', async () => {
+  const { page, context } = await open({ width: 1280, height: 800 });
+  const s = await page.evaluate(() => {
+    const form = document.getElementById('ajanlat-urlap');
+    const fields = [...form.querySelectorAll('input, textarea, select')].filter((el) => el.type !== 'hidden' && !el.closest('.hp'));
+    return {
+      fields: fields.map((el) => el.id),
+      notRequired: fields.filter((el) => !el.required).map((el) => el.id),
+      noStar: fields.filter((el) => !form.querySelector(`label[for="${el.id}"] .req`)).map((el) => el.id),
+      optionalText: /nem kötelező/i.test(form.innerText),
+    };
+  });
+  assert(s.fields.length === 7, `mezők: ${s.fields}`);
+  assert(s.notRequired.length === 0 && s.noStar.length === 0 && !s.optionalText, JSON.stringify(s));
   await context.close();
 });
 
@@ -438,6 +455,29 @@ await test('adatkezelési jelölőnégyzet nélkül nem küld; bejelölés után
       assert((await page.evaluate(() => document.activeElement.id)) === 'adatkezeles', 'a hibalink nem fókuszál');
       await page.check('#adatkezeles');
       assert((await page.textContent('#adatkezeles-hiba')) === '', 'bejelölés után megmaradt a hiba');
+      await page.click('.form__submit');
+      await page.waitForURL(/koszonjuk\.html/);
+      assert(posts.length === 1, `kérések: ${posts.length}`);
+    },
+  );
+});
+
+await test('fogyasztás és üzenet: üresen, szóközökkel vagy túl röviden hibát ad, nincs kérés', async () => {
+  await withEndpoint(
+    (route) => route.fulfill({ status: 200, body: 'OK' }),
+    async (page, posts) => {
+      for (const [fogyasztas, uzenet, hiba] of [['', 'Délre néző cseréptető.', 'fogyasztas'], ['   ', 'Délre néző cseréptető.', 'fogyasztas'], ['3 500 kWh', '     ', 'uzenet'], ['3 500 kWh', 'Tető', 'uzenet']]) {
+        await fill(page, { fogyasztas, uzenet });
+        await page.click('.form__submit');
+        const s = await page.evaluate(() => ({
+          fogyasztas: document.getElementById('fogyasztas-hiba').textContent,
+          uzenet: document.getElementById('uzenet-hiba').textContent,
+        }));
+        assert(s[hiba] !== '' && s[hiba === 'uzenet' ? 'fogyasztas' : 'uzenet'] === '', `${JSON.stringify([fogyasztas, uzenet])}: ${JSON.stringify(s)}`);
+      }
+      assert(posts.length === 0 && !page.url().includes('koszonjuk'), `kérések: ${posts.length}`);
+      // Becslés szöveggel is elfogadott (pl. aki nem tudja pontosan)
+      await fill(page, { fogyasztas: 'nem tudom pontosan', uzenet: 'Délre néző cseréptető.' });
       await page.click('.form__submit');
       await page.waitForURL(/koszonjuk\.html/);
       assert(posts.length === 1, `kérések: ${posts.length}`);
