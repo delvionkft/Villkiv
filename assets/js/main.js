@@ -383,6 +383,10 @@
       },
       { rootMargin: '0px 0px -8% 0px', threshold: 0.01 },
     );
+    // A listák elemei sorban, kis késleltetéssel jelennek meg
+    document.querySelectorAll('[data-stagger]').forEach((list) => {
+      [...list.children].forEach((child, i) => child.style.setProperty('--i', String(i)));
+    });
     items.forEach((el) => {
       // Ami már látszik betöltéskor, azt nem rejtjük el
       const r = el.getBoundingClientRect();
@@ -507,6 +511,36 @@
     timelines.forEach((t) => ro.observe(t.wrap));
   }
   reduceMotion.addEventListener?.('change', onScroll);
+
+  /* ---------------------------------------------------------------------
+     Sötét felületek: az egérmutatót követő fény (csak egérrel, mozgással)
+     A fény külön rétegen van, és csak ennek a változóit írjuk (@property,
+     nem öröklődő), így egérmozdulatonként nem számolódik újra a szekció.
+     --------------------------------------------------------------------- */
+  if (window.matchMedia('(hover: hover) and (pointer: fine)').matches && !reduceMotion.matches) {
+    document.querySelectorAll('.hero, .pv, .contact').forEach((el) => {
+      const glow = document.createElement('span');
+      glow.className = 'spotlight';
+      glow.setAttribute('aria-hidden', 'true');
+      el.prepend(glow);
+      let frame = 0;
+      let x = 0;
+      let y = 0;
+      el.addEventListener('pointermove', (e) => {
+        const r = el.getBoundingClientRect();
+        x = e.clientX - r.left;
+        y = e.clientY - r.top;
+        if (frame) return;
+        frame = requestAnimationFrame(() => {
+          frame = 0;
+          glow.style.setProperty('--mx', `${Math.round(x)}px`);
+          glow.style.setProperty('--my', `${Math.round(y)}px`);
+          glow.style.setProperty('--spot', '1');
+        });
+      });
+      el.addEventListener('pointerleave', () => glow.style.setProperty('--spot', '0'));
+    });
+  }
 
   /* ---------------------------------------------------------------------
      Köszönőoldal: a választott szolgáltatáshoz illő tanács

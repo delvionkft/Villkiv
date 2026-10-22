@@ -132,10 +132,10 @@
     <!-- Arany sáv: rövid, igaz állítások -->
     <div class="band" aria-label="Röviden rólunk">
       <ul class="wrap band__list">
-        <li><svg aria-hidden="true"><use href="#i-bolt"/></svg>Villamosmérnöki háttér</li>
-        <li><svg aria-hidden="true"><use href="#i-ruler"/></svg>Fogyasztáshoz méretezett rendszer</li>
-        <li><svg aria-hidden="true"><use href="#i-sun"/></svg>Kulcsrakészen, országosan</li>
-        <li><svg aria-hidden="true"><use href="#i-shield"/></svg>Legalább 2 év garancia</li>
+        <li style="--i: 0"><svg aria-hidden="true"><use href="#i-bolt"/></svg>Villamosmérnöki háttér</li>
+        <li style="--i: 1"><svg aria-hidden="true"><use href="#i-ruler"/></svg>Fogyasztáshoz méretezett rendszer</li>
+        <li style="--i: 2"><svg aria-hidden="true"><use href="#i-sun"/></svg>Kulcsrakészen, országosan</li>
+        <li style="--i: 3"><svg aria-hidden="true"><use href="#i-shield"/></svg>Legalább 2 év garancia</li>
       </ul>
     </div>
 
@@ -148,7 +148,7 @@
             <p class="eyebrow"><span class="eyebrow__num">01</span>Napelemes rendszerek</p>
             <h2 class="h2" id="napelem-cim">Az otthonodhoz és a fogyasztásodhoz illő napelemes rendszer.</h2>
             <p class="lead">Kisebb villanyszámla és kiszámíthatóbb energiaellátás. A rendszert mérnöki számítással méretezzük a fogyasztásodhoz.</p>
-            <ul class="scope scope--light" aria-label="Amit vállalunk">
+            <ul class="scope scope--light" aria-label="Amit vállalunk" data-stagger>
               <li><svg aria-hidden="true"><use href="#i-check"/></svg>Felmérés és méretezés</li>
               <li><svg aria-hidden="true"><use href="#i-check"/></svg>Mérnöki tervezés</li>
               <li><svg aria-hidden="true"><use href="#i-check"/></svg>Engedélyeztetés</li>
@@ -173,7 +173,7 @@
         </div>
 
         <!-- ELLENŐRIZENDŐ: a tájékoztató ár bruttó (áfával) értendő? Lakossági oldalon bruttó árat kell feltüntetni. -->
-        <dl class="stats stats--light stats--row" data-reveal>
+        <dl class="stats stats--light stats--row" data-reveal data-stagger>
           <div class="stat">
             <dt class="stat__label">5 kWp rendszer tájékoztató ára</dt>
             <dd class="stat__value">2,5–4 M Ft</dd>
@@ -191,7 +191,7 @@
 
         <div class="when" data-reveal>
           <h3 class="h3">Mikor érdemes?</h3>
-          <ul class="when__grid">
+          <ul class="when__grid" data-stagger>
             <li class="when__item"><span class="when__icon" aria-hidden="true"><svg><use href="#i-bolt"/></svg></span>Magas a villanyszámlád</li>
             <li class="when__item"><span class="when__icon" aria-hidden="true"><svg><use href="#i-battery"/></svg></span>Klíma, hőszivattyú vagy autótöltő jön</li>
             <li class="when__item"><span class="when__icon" aria-hidden="true"><svg><use href="#i-home"/></svg></span>Új házat építesz vagy felújítasz</li>
@@ -327,13 +327,13 @@
         <header class="trust__head" data-reveal>
           <p class="eyebrow"><span class="eyebrow__num">04</span>VILLKIV Mérnökiroda</p>
           <h2 class="h2" id="rolunk-cim">Mérnöki háttér minden munkához.</h2>
-          <ul class="team" aria-label="A csapat">
+          <ul class="team" aria-label="A csapat" data-stagger>
             <li>Villamosmérnökök</li>
             <li>Regisztrált villanyszerelők</li>
             <li>Villamos biztonsági felülvizsgálók</li>
           </ul>
         </header>
-        <ul class="promises" data-reveal>
+        <ul class="promises" data-reveal data-stagger>
           <li class="promise">
             <span class="promise__icon" aria-hidden="true"><svg><use href="#i-ruler"/></svg></span>
             <p class="promise__title">Egyedi felmérés</p>
@@ -358,7 +358,7 @@
       </div>
       <div class="wrap work" data-reveal>
         <h3 class="h3 block-title">Munkáinkból</h3>
-        <div class="work__grid">
+        <div class="work__grid" data-stagger>
           <figure class="work__item">
             <picture class="media media--work">
               <source type="image/avif" srcset="assets/img/munka-1-480.avif 480w, assets/img/munka-1-720.avif 720w, assets/img/munka-1-960.avif 960w" sizes="(min-width: 640px) 50vw, 100vw">
@@ -415,7 +415,7 @@
           <h2 class="h2" id="kapcsolat-cim">Kérj személyre szabott rendszertervet.</h2>
           <p class="lead">Írd meg, hol van az ingatlan – 48 órán belül jelentkezünk, kötelezettség nélkül.</p>
 
-          <ul class="contact__list">
+          <ul class="contact__list" data-stagger>
             <li><span class="contact__icon" aria-hidden="true"><svg><use href="#i-phone"/></svg></span><span><span class="contact__k">Telefon</span><a href="tel:+36205043300">+36 20 504 33 00</a></span></li>
             <li><span class="contact__icon" aria-hidden="true"><svg><use href="#i-mail"/></svg></span><span><span class="contact__k">E-mail</span><a href="mailto:mernok@villkiv.hu">mernok@villkiv.hu</a></span></li>
           </ul>

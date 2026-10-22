@@ -47,7 +47,20 @@ async function open(viewport, { url = BASE, reducedMotion = 'no-preference' } = 
   page.on('requestfailed', (r) => errors.push(`kérés sikertelen: ${r.url()}`));
   await page.goto(url, { waitUntil: 'networkidle' });
   await page.evaluate(() => document.fonts.ready);
+  await settle(page);
   return { page, context, errors };
+}
+
+// Megvárja az időalapú (belépő) animációk végét; a görgetéshez kötöttek sosem „érnek véget”
+async function settle(page) {
+  await page.evaluate(() =>
+    Promise.all(
+      document
+        .getAnimations()
+        .filter((a) => a.timeline === document.timeline && Number.isFinite(a.effect?.getComputedTiming().endTime))
+        .map((a) => a.finished.catch(() => {})),
+    ),
+  );
 }
 
 async function axe(page, label) {
@@ -913,12 +926,27 @@ for (const width of [390, 1440]) {
 
 await test('csökkentett mozgás: nincs rejtett/animált tartalom, nincs sima görgetés', async () => {
   const { page, context } = await open({ width: 1280, height: 800 }, { reducedMotion: 'reduce' });
+  // Végiggörgetünk és az egeret is mozgatjuk: semmi nem indulhat el
+  await page.mouse.move(400, 300);
+  await page.evaluate(async () => {
+    for (let y = 0; y < document.body.scrollHeight; y += 400) {
+      window.scrollTo({ top: y, behavior: 'instant' });
+      await new Promise((r) => setTimeout(r, 20));
+    }
+  });
+  await page.mouse.move(420, 320);
   const s = await page.evaluate(() => ({
     ready: document.documentElement.classList.contains('reveal-ready'),
-    hidden: [...document.querySelectorAll('[data-reveal]')].filter((e) => getComputedStyle(e).opacity !== '1').length,
+    hidden: [...document.querySelectorAll('[data-reveal], [data-stagger] > *')].filter((e) => getComputedStyle(e).opacity !== '1').length,
     scroll: getComputedStyle(document.documentElement).scrollBehavior,
+    // Mozgásnak számít minden CSS-animáció és a helyzetet/méretet/átlátszóságot változtató átmenet
+    animations: document
+      .getAnimations()
+      .filter((a) => !(a instanceof CSSTransition) || /transform|translate|scale|rotate|opacity|clip/.test(a.transitionProperty))
+      .map((a) => a.animationName || a.transitionProperty),
+    spotlight: document.querySelectorAll('.spotlight').length,
   }));
-  assert(!s.ready && s.hidden === 0 && s.scroll === 'auto', JSON.stringify(s));
+  assert(!s.ready && s.hidden === 0 && s.scroll === 'auto' && s.animations.length === 0 && s.spotlight === 0, JSON.stringify(s));
   await context.close();
 });
 
@@ -947,9 +975,89 @@ await test('görgetés közben megjelenő elemek a végére mind láthatók', as
       await new Promise((r) => setTimeout(r, 30));
     }
   });
-  await page.waitForTimeout(700);
-  const hidden = await page.evaluate(() => [...document.querySelectorAll('[data-reveal]')].filter((e) => !e.classList.contains('is-visible')).length);
-  assert(hidden === 0, `${hidden} elem rejtve maradt`);
+  await page.waitForTimeout(1300);
+  const s = await page.evaluate(() => ({
+    hidden: [...document.querySelectorAll('[data-reveal]')].filter((e) => !e.classList.contains('is-visible')).length,
+    staggered: [...document.querySelectorAll('[data-stagger] > *')].filter((e) => getComputedStyle(e).opacity !== '1').map((e) => e.textContent.trim().slice(0, 30)),
+  }));
+  assert(s.hidden === 0 && s.staggered.length === 0, JSON.stringify(s));
+  await context.close();
+});
+
+console.log('\nMozgás');
+await test('nyitóképernyő: a főcím azonnal látszik, a többi elem rövid belépővel érkezik (< 1,8 mp)', async () => {
+  const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  const page = await context.newPage();
+  await page.goto(BASE, { waitUntil: 'domcontentloaded' });
+  const s = await page.evaluate(() => {
+    const h1 = document.querySelector('.hero__title');
+    const anims = document.getAnimations().filter((a) => a.timeline === document.timeline);
+    return {
+      h1: getComputedStyle(h1).opacity,
+      h1Animated: h1.getAnimations().length,
+      names: [...new Set(anims.map((a) => a.animationName))],
+      longest: Math.max(...anims.map((a) => a.effect.getComputedTiming().endTime)),
+      infinite: document.getAnimations().filter((a) => a.effect.getComputedTiming().iterations === Infinity).length,
+    };
+  });
+  assert(s.h1 === '1' && s.h1Animated === 0, `főcím: ${JSON.stringify(s)}`);
+  assert(s.names.includes('rise') && s.names.includes('settle'), `belépők: ${s.names}`);
+  assert(s.longest <= 1800 && s.infinite === 0, `leghosszabb: ${s.longest} ms, végtelen: ${s.infinite}`);
+  await context.close();
+});
+
+await test('görgetéshez kötött mozgás: fotók parallaxisa, panelek és díszek – csak a görgetést követik', async () => {
+  const { page, context } = await open({ width: 1440, height: 900 });
+  const s = await page.evaluate(() => {
+    const by = (sel) => document.querySelector(sel).getAnimations().map((a) => [a.animationName, a.timeline?.constructor.name]);
+    return { pv: by('.media--pv img'), work: by('.media--work img'), panel: by('.contact'), deco: by('.deco--pv-arcs') };
+  });
+  assert(JSON.stringify(s.pv) === '[["parallax","ViewTimeline"]]' && JSON.stringify(s.work) === '[["parallax","ViewTimeline"]]', JSON.stringify(s));
+  assert(JSON.stringify(s.panel) === '[["panel-in","ViewTimeline"]]' && JSON.stringify(s.deco) === '[["orbit","ViewTimeline"]]', JSON.stringify(s));
+  // A parallaxis görgetéssel változik
+  const shift = async (y) => {
+    await page.evaluate((y) => window.scrollTo({ top: y, behavior: 'instant' }), y);
+    await page.waitForTimeout(120);
+    return page.evaluate(() => getComputedStyle(document.querySelector('.media--pv img')).translate);
+  };
+  const top = await page.evaluate(() => document.querySelector('.media--pv').getBoundingClientRect().top + scrollY);
+  const a = await shift(top - 800);
+  const b = await shift(top);
+  assert(a !== b, `parallaxis nem mozdult: ${a} → ${b}`);
+  // Kinyílt állapotban a panel nincs megvágva
+  await page.evaluate(() => document.getElementById('kapcsolat').scrollIntoView({ behavior: 'instant' }));
+  await page.waitForTimeout(150);
+  const clip = await page.evaluate(() => getComputedStyle(document.getElementById('kapcsolat')).clipPath);
+  assert(/^inset\(0(px|%)?( 0(px|%)?)* round/.test(clip) || clip === 'none', `panel vágása: ${clip}`);
+  await context.close();
+});
+
+await test('kártyák rámutatáskor megemelkednek; a fény követi az egeret a sötét felületen', async () => {
+  const { page, context } = await open({ width: 1440, height: 900 });
+  await page.locator('.promise').first().scrollIntoViewIfNeeded();
+  await page.waitForTimeout(1200);
+  await page.hover('.promise >> nth=0');
+  await page.waitForTimeout(400);
+  const lift = await page.evaluate(() => getComputedStyle(document.querySelector('.promise')).translate);
+  assert(lift === '0px -4px', `emelkedés: ${lift}`);
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+  await page.mouse.move(300, 300);
+  await page.mouse.move(340, 330);
+  await page.waitForTimeout(600);
+  const g = await page.evaluate(() => {
+    const el = document.querySelector('.hero > .spotlight');
+    const cs = getComputedStyle(el);
+    return { aria: el.getAttribute('aria-hidden'), opacity: Number(cs.opacity), mx: cs.getPropertyValue('--mx'), pe: cs.pointerEvents };
+  });
+  assert(g.aria === 'true' && g.opacity > 0.9 && g.mx === '340px' && g.pe === 'none', JSON.stringify(g));
+  await context.close();
+});
+
+await test('érintőképernyőn nincs egérkövető fény', async () => {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+  const page = await context.newPage();
+  await page.goto(BASE, { waitUntil: 'networkidle' });
+  assert((await page.evaluate(() => document.querySelectorAll('.spotlight').length)) === 0, 'érintőképernyőn is létrejött');
   await context.close();
 });
 

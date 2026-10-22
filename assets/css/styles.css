@@ -465,6 +465,8 @@ main:focus { outline: none; }
 .media {
   position: relative;
   overflow: hidden;
+  /* clip: nem görgetési konténer, így a parallaxis az oldal görgetését követi */
+  overflow: clip;
   border-radius: var(--r-lg);
   background: var(--surface);
   max-width: 100%;
@@ -1014,6 +1016,8 @@ html:not(.js) .timeline-wrap--dark .timeline__num { background: var(--yellow); b
 @media (min-width: 420px) { .promises { grid-template-columns: 1fr 1fr; } }
 @media (min-width: 640px) { .promises { gap: 16px; } }
 .promise {
+  position: relative;
+  background: var(--bg);
   display: grid;
   gap: 8px;
   align-content: start;
@@ -1452,21 +1456,151 @@ html:not(.js) .form__submit { display: none; }
 .consent__btn:focus-visible { outline: 3px solid var(--yellow); outline-offset: 3px; }
 
 /* --------------------------------------------------------------------------
-   Finom megjelenés (csak ha a JS elindult és nincs csökkentett mozgás)
+   Mozgás
+   Minden csak akkor fut, ha a látogató nem kért csökkentett mozgást.
+   - Belépés: egyszer, rövid ideig; a főcím azonnal látszik (LCP).
+   - Görgetéshez kötött effektek (parallaxis, panelek, díszek): a görgetést
+     követik, maguktól nem mozognak; ahol nincs támogatás, statikus marad.
+   - Végtelenített, magától futó animáció nincs (WCAG 2.2.2).
    -------------------------------------------------------------------------- */
+@property --mx { syntax: "<length-percentage>"; inherits: false; initial-value: 50%; }
+@property --my { syntax: "<length-percentage>"; inherits: false; initial-value: 50%; }
+@property --spot { syntax: "<number>"; inherits: false; initial-value: 0; }
+
 @media (prefers-reduced-motion: no-preference) {
+  @keyframes rise { from { opacity: 0; translate: 0 18px; } }
+  @keyframes settle { from { scale: 1.22; } }
+  @keyframes pop { 0% { opacity: 0; scale: 0.4; } 70% { scale: 1.08; } }
+
+  /* Nyitóképernyő – lépcsőzetes belépés */
+  .js .hero .pill { animation: rise 0.6s var(--ease) backwards; }
+  .js .hero__lead { animation: rise 0.6s var(--ease) 0.1s backwards; }
+  .js .chooser__item { animation: rise 0.6s var(--ease) 0.18s backwards; }
+  .js .chooser__item + .chooser__item { animation-delay: 0.26s; }
+  .js .hero__detail { animation: rise 0.7s var(--ease) 0.35s backwards; }
+  .js .band__list li { animation: rise 0.5s var(--ease) backwards; animation-delay: calc(0.3s + var(--i, 0) * 80ms); }
+
+  /* Aloldalak nyitórésze */
+  .js .thanks__icon { animation: pop 0.6s var(--ease) 0.05s backwards; }
+  .js .thanks__inner > :not(.thanks__icon),
+  .js .legal-hero .wrap > * { animation: rise 0.6s var(--ease) backwards; }
+  .js .thanks__inner > :nth-child(2), .js .legal-hero .wrap > :nth-child(2) { animation-delay: 0.08s; }
+  .js .thanks__inner > :nth-child(3), .js .legal-hero .wrap > :nth-child(3) { animation-delay: 0.16s; }
+  .js .thanks__inner > :nth-child(n + 4) { animation-delay: 0.24s; }
+  .js .next-steps li { animation: rise 0.6s var(--ease) backwards; }
+  .js .next-steps li:nth-child(2) { animation-delay: 0.1s; }
+  .js .next-steps li:nth-child(3) { animation-delay: 0.2s; }
+
+  /* Görgetéskor megjelenő blokkok, a listák elemei lépcsőzetesen */
   .reveal-ready [data-reveal] {
     opacity: 0;
-    transform: translateY(12px);
-    transition: opacity 0.5s var(--ease), transform 0.5s var(--ease);
+    transform: translateY(20px);
+    transition: opacity 0.6s var(--ease), transform 0.6s var(--ease);
   }
   .reveal-ready [data-reveal].is-visible { opacity: 1; transform: none; }
+  .reveal-ready [data-reveal] [data-stagger] > *,
+  .reveal-ready [data-reveal][data-stagger] > * {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.55s var(--ease), transform 0.55s var(--ease), translate 0.25s var(--ease), box-shadow 0.25s var(--ease), border-color 0.2s ease;
+    transition-delay: calc(0.12s + var(--i, 0) * 70ms), calc(0.12s + var(--i, 0) * 70ms), 0s, 0s, 0s;
+  }
+  .reveal-ready [data-reveal].is-visible [data-stagger] > *,
+  .reveal-ready [data-reveal][data-stagger].is-visible > * { opacity: 1; transform: none; }
+
+  /* Kártyák: emelkedés és ikon-mozdulat rámutatáskor */
+  .promise, .when__item, .stat, .chooser__item {
+    transition: translate 0.25s var(--ease), box-shadow 0.25s var(--ease), border-color 0.2s ease, background-color 0.2s ease;
+  }
+  .promise:hover, .when__item:hover, .stat:hover { translate: 0 -4px; box-shadow: 0 16px 32px -14px rgba(11, 30, 58, 0.28); }
+  .chooser__item:hover { translate: 0 -3px; }
+  .stat:hover { border-color: rgba(226, 196, 91, 0.6); }
+  .promise:hover { border-color: var(--navy-500); }
+  .promise__icon, .when__icon { transition: rotate 0.3s var(--ease), scale 0.3s var(--ease), background-color 0.2s ease, color 0.2s ease; }
+  .promise:hover .promise__icon { rotate: -8deg; scale: 1.08; background: var(--yellow); color: var(--navy-900); }
+  .when__item:hover .when__icon { rotate: -8deg; scale: 1.08; }
+
+  /* Munkafotók: finom nagyítás rámutatáskor */
+  .media img { transition: scale 0.7s var(--ease); }
+  .work__item:hover .media img { scale: 1.05; }
+
+  /* Elsődleges gomb: fényvillanás rámutatáskor */
+  .btn--primary { position: relative; overflow: hidden; isolation: isolate; }
+  .btn--primary::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.5) 50%, transparent 70%);
+    translate: -110% 0;
+    transition: translate 0.7s var(--ease);
+    pointer-events: none;
+  }
+  .btn--primary:hover::after { translate: 110% 0; }
+
+  /* Sötét felületek: az egérmutatót követő arany fény (csak egérrel) */
+  @media (hover: hover) and (pointer: fine) {
+    .hero > .wrap { position: relative; z-index: 1; }
+    .spotlight {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background: radial-gradient(560px circle at var(--mx) var(--my), rgba(226, 196, 91, 0.1), transparent 65%);
+      opacity: var(--spot);
+      transition: opacity 0.4s ease, --spot 0.4s ease;
+    }
+  }
+
+  /* Görgetéshez kötött mozgás */
+  @supports (animation-timeline: view()) {
+    @keyframes parallax { from { translate: 0 calc(var(--px, 6%) * -1); } to { translate: 0 var(--px, 6%); } }
+    @keyframes panel-in { from { clip-path: inset(0 3.5% round clamp(20px, 3vw, 36px)); } to { clip-path: inset(0 0 round clamp(20px, 3vw, 36px)); } }
+    @keyframes orbit { from { rotate: -14deg; } to { rotate: 22deg; } }
+    @keyframes drift { from { translate: 0 -28px; } to { translate: 0 28px; } }
+    @keyframes frame-shift { from { translate: -10px -10px; } to { translate: 8px 8px; } }
+
+    .media--wide img, .media--pv img, .media--work img {
+      scale: 1.14;
+      animation: parallax linear both;
+      animation-timeline: view();
+      animation-range: cover;
+    }
+    .work__item:hover .media img { scale: 1.2; }
+    .js .media--hero img {
+      --px: 4%;
+      scale: 1.1;
+      animation: settle 1.6s var(--ease) backwards, parallax linear both;
+      animation-timeline: auto, view();
+      animation-range: normal, cover;
+    }
+
+    /* A sötét panelek görgetés közben oldalra „kinyílnak” (vágással, így a szöveg éles marad) */
+    .pv, .contact {
+      animation: panel-in linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 55vh;
+    }
+
+    .deco--hero-arcs, .deco--pv-arcs, .deco--contact-arcs, .deco--thanks-arcs {
+      animation: orbit linear both;
+      animation-timeline: view();
+    }
+    .deco--dots, .deco--ev-circuit, .deco--process-circuit {
+      animation: drift linear both;
+      animation-timeline: view();
+    }
+    .framed::before {
+      animation: frame-shift linear both;
+      animation-timeline: view();
+    }
+  }
 }
 
 @media print {
   .site-header, .contact__form, .deco, .consent, .site-footer__wordmark { display: none; }
   .pv, .contact, .site-footer { background: none; color: #000; }
-  [data-reveal] { opacity: 1 !important; transform: none !important; }
+  [data-reveal], [data-stagger] > * { opacity: 1 !important; transform: none !important; }
 }
 
 @media (max-width: 639px) {

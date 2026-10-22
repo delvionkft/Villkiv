@@ -117,6 +117,16 @@ npm run build      # aloldalak generálása + dist/ mappa: csak a weboldalhoz sz
 
 A `dist` mappát (vagy a belőle készült zip-et) húzd be ide: https://app.netlify.com/drop. A tárhelyszolgáltató adatait írd be az impresszumba.
 
+## Mozgás
+
+Minden effekt a CSS végén, a *Mozgás* szakaszban van, és csak akkor fut, ha a látogató nem kért csökkentett mozgást (akkor semmi nem mozog, és minden tartalom azonnal látszik).
+
+- **Belépés:** a nyitóképernyő elemei lépcsőzetesen érkeznek (< 1,8 mp). A főcím azonnal látszik, hogy a betöltési mutató (LCP) ne romoljon.
+- **Görgetéshez kötött:** a fotók parallaxisa, a sötét panelek oldalra „kinyílása”, a díszítő ívek és pontrácsok mozgása. Ezek a görgetést követik, maguktól nem mozognak; ahol a böngésző nem támogatja (pl. Firefox), statikusak.
+- **Rámutatás:** a kártyák megemelkednek, a gombokon fényvillanás fut végig, a munkafotók nagyítanak. Egérrel a sötét felületeken a mutatót arany fény követi (érintőképernyőn nincs).
+- **Végtelenített, magától futó animáció nincs** – ez akadálymentességi követelmény (WCAG 2.2.2), ne tegyél fel ilyet (pl. futószalagos szöveget) megállítógomb nélkül.
+- A fotókeretek `overflow: clip`-et használnak, nem `hidden`-t: a `hidden` görgetési konténerré tenné őket, és a parallaxis megállna.
+
 ## Referenciák
 
 A referencia- és jogosultságblokk **szándékosan nincs a publikus oldalon**, mert nincs még ellenőrizhető adat. A sablon az `index.html`-ben, a `<template id="referenciak-sablon">` elemben van. Csak valódi munkafotókkal, hozzájárulással közölt véleményekkel és tényleges jogosultsági adatokkal aktiváld.
@@ -139,6 +149,7 @@ A tesztek (Playwright + axe-core) ezeket ellenőrzik:
 - az adatkezelési jelölőnégyzet nélkül nem küld;
 - a sütisáv: Pixel ID nélkül nincs; ID-vel elfogadás előtt nincs Meta-kérés, az elutasítás egyenrangú, a döntés megmarad, lejár, visszavonható, és a `Lead` csak valódi beküldés után fut;
 - a jogi oldalak hibátlanok (noindex, WCAG, linkek), és a láblécük megegyezik a főoldaléval;
+- a mozgás: a főcím nem animált, a belépő rövid, nincs végtelen animáció; a parallaxis a görgetést követi; csökkentett mozgásnál és érintőképernyőn a megfelelő effektek nem futnak;
 - az elrendezésugrás (CLS) lassú képekkel és betűkkel is < 0,02;
 - működik a csökkentett mozgás beállítás és a JavaScript nélküli megjelenítés.
 
