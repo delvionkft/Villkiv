@@ -5,7 +5,39 @@ import { readFile, writeFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
-const index = await readFile(path.join(ROOT, 'index.html'), 'utf8');
+
+// 1) Ajánlatkérő űrlapok: a partials/urlap.html egyetlen forrásából, a jelölők közé
+//    (<!-- urlap:felso --> … <!-- /urlap:felso -->), példányonként egyedi azonosítókkal.
+const FORMS = {
+  felso: { id: 'urlap-felso', p: 'f', hely: 'felső', cim: 'ajanlat-cim' },
+  also: { id: 'urlap-also', p: 'a', hely: 'alsó', cim: 'kapcsolat-cim' },
+};
+const partial = (await readFile(path.join(ROOT, 'partials', 'urlap.html'), 'utf8')).replace(/^<!--[\s\S]*?-->\n/, '');
+const source = await readFile(path.join(ROOT, 'index.html'), 'utf8');
+const found = new Set();
+const withForms = source.replace(/^( *)<!-- urlap:(\w+)\b[^>]*-->\n[\s\S]*?^ *<!-- \/urlap:\2 -->/gm, (all, indent, key) => {
+  const cfg = FORMS[key];
+  if (!cfg) throw new Error(`Ismeretlen űrlapjelölő: ${key}`);
+  found.add(key);
+  const html = partial
+    .replace(/\{\{(\w+)\}\}/g, (m, k) => {
+      if (!(k in cfg)) throw new Error(`Ismeretlen helyettesítő: ${m}`);
+      return cfg[k];
+    })
+    .trimEnd()
+    .split('\n')
+    .map((line) => (line ? indent + line : line))
+    .join('\n');
+  return `${indent}<!-- urlap:${key} – generált (partials/urlap.html, npm run pages), ne itt szerkeszd -->\n${html}\n${indent}<!-- /urlap:${key} -->`;
+});
+for (const key of Object.keys(FORMS)) if (!found.has(key)) throw new Error(`Hiányzó űrlapjelölő az index.html-ben: urlap:${key}`);
+if (withForms !== source) {
+  await writeFile(path.join(ROOT, 'index.html'), withForms);
+  console.log('✓ index.html (űrlapok)');
+}
+
+// 2) Aloldalak
+const index = withForms;
 const pick = (re, label) => {
   const m = index.match(re);
   if (!m) throw new Error(`Nem található az index.html-ben: ${label}`);

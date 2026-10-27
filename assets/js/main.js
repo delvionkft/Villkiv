@@ -39,341 +39,284 @@
   }
 
   /* ---------------------------------------------------------------------
-     Szolgáltatás előválasztása a CTA-gombokról (és ?szolgaltatas= paraméterből)
+     Ajánlatkérő űrlapok: 7 lépés, két példány (hero alatt és lábléc felett)
+     - A két példány közös állapotot használ: amit az egyikben megadsz, a
+       másik is tudja, és ugyanannál a kérdésnél tart.
+     - Egérrel/érintéssel választott válasz után magától továbblép;
+       billentyűzettel a „Tovább” gomb visz tovább (a nyilak nem léptetnek).
+     - Siker (köszönőoldal) csak az EmailJS 2xx válasza után.
      --------------------------------------------------------------------- */
-  const form = document.getElementById('ajanlat-urlap');
-  const contact = document.getElementById('kapcsolat');
-  const SERVICES = ['erintesvedelem', 'napelem', 'mindketto'];
-
-  const selectService = (value) => {
-    if (!form || !SERVICES.includes(value)) return null;
-    const radio = form.querySelector(`input[type="radio"][name="szolgaltatas"][value="${value}"]`);
-    if (!radio) return null;
-    radio.checked = true;
-    radio.dispatchEvent(new Event('change', { bubbles: true }));
-    return radio;
+  const EMAILJS_URL = 'https://api.emailjs.com/api/v1.0/email/send';
+  const TIMEOUT_MS = 15000;
+  const clean = (v) => v.replace(/\s+/g, ' ').trim();
+  const phoneDigits = (v) => v.replace(/[\s\-()./]/g, '');
+  const PICK = 'Válassz egy lehetőséget.';
+  const RULES = {
+    segitseg: (v) => (v ? '' : PICK),
+    cel: (v) => (v ? '' : PICK),
+    ingatlan: (v) => (v ? '' : PICK),
+    szamla: (v) => (v ? '' : PICK),
+    idozites: (v) => (v ? '' : PICK),
+    telepules: (v) => (clean(v).length >= 2 ? '' : 'Add meg a települést vagy az irányítószámot.'),
+    nev: (v) => (clean(v).length >= 2 ? '' : 'Add meg a teljes neved.'),
+    telefon: (v) => {
+      if (!clean(v)) return 'Add meg a telefonszámod.';
+      return /^\+?\d{8,15}$/.test(phoneDigits(v))
+        ? ''
+        : 'Ellenőrizd a telefonszámot – például: +36 30 123 4567 vagy 06 30 123 4567.';
+    },
+    email: (v) => {
+      if (!clean(v)) return 'Add meg az e-mail-címed.';
+      return /^[^\s@]+@[^\s@.]+(\.[^\s@.]+)*\.[^\s@.]{2,}$/.test(v.trim())
+        ? ''
+        : 'Ellenőrizd az e-mail-címet – például: nev@pelda.hu.';
+    },
+    adatkezeles: (v) => (v ? '' : 'Jelöld be, hogy elolvastad az adatkezelési tájékoztatót.'),
   };
 
-  document.addEventListener('click', (e) => {
-    const link = e.target.closest('a[data-service]');
-    if (!link || !contact || !form) return;
-    // Több szolgáltatásnál a megfelelő választógombot jelöljük ki; egyetlen
-    // szolgáltatásnál (rejtett mező) az első kitöltendő mezőre visszük a fókuszt.
-    const target = selectService(link.dataset.service) || form.querySelector('input:not([type="hidden"]):not([tabindex="-1"])');
-    if (!target) return;
-    e.preventDefault();
-    contact.scrollIntoView({ behavior: scrollBehavior(), block: 'start' });
-    target.focus({ preventScroll: true });
+  // Az EmailJS-azonosítók egy helyen, a <html> elemen vannak (mindkét űrlap ezeket használja)
+  const emailjsConfig = () => {
+    const get = (k) => (root.dataset[k] || '').trim();
+    const cfg = { key: get('emailjsPublicKey'), service: get('emailjsService'), template: get('emailjsTemplate') };
+    return cfg.key && cfg.service && cfg.template ? cfg : null;
+  };
+
+  const valueOf = (form, name) => {
+    const el = form.elements[name];
+    if (!el) return '';
+    if (el instanceof RadioNodeList) return el.value;
+    if (el.type === 'checkbox') return el.checked ? el.value : '';
+    return el.value;
+  };
+
+  const shared = { step: 0 };
+  const leads = [...document.querySelectorAll('form[data-lead-form]')].map((form) => {
+    const steps = [...form.querySelectorAll('[data-step]')];
+    return {
+      form,
+      steps,
+      names: steps.map((s) => [...new Set([...s.querySelectorAll('input[name]')].map((i) => i.name))]),
+      back: form.querySelector('[data-back]'),
+      submit: form.querySelector('.form__submit'),
+      submitLabel: form.querySelector('.form__submit-label'),
+      status: form.querySelector('.form__status'),
+      busy: false,
+    };
+  });
+
+  const showError = (lead, name, message) => {
+    const errorEl = lead.form.querySelector(`[data-error-for="${name}"]`);
+    if (errorEl) errorEl.textContent = message;
+    lead.form.querySelectorAll(`[name="${name}"]`).forEach((el) => {
+      if (message) el.setAttribute('aria-invalid', 'true');
+      else el.removeAttribute('aria-invalid');
+    });
+  };
+
+  // Ellenőrzi a lépést, megjeleníti a hibákat; az első hibás mező nevét adja vissza
+  const validateStep = (lead, i) => {
+    let first = null;
+    lead.names[i].forEach((name) => {
+      const message = RULES[name] ? RULES[name](valueOf(lead.form, name)) : '';
+      showError(lead, name, message);
+      if (message && !first) first = name;
+    });
+    return first;
+  };
+
+  const focusField = (lead, name, options) => {
+    const el = lead.form.elements[name];
+    const target = el instanceof RadioNodeList ? [...el].find((r) => r.checked) || el[0] : el;
+    target?.focus(options);
+  };
+
+  const render = (lead) => {
+    const last = lead.steps.length - 1;
+    lead.steps.forEach((s, i) => {
+      const current = i === shared.step;
+      s.classList.toggle('is-current', current);
+      s.inert = !current;
+    });
+    lead.back.hidden = shared.step === 0;
+    if (!lead.busy) lead.submitLabel.textContent = shared.step === last ? 'Ajánlatot kérek' : 'Tovább';
+    lead.form.style.setProperty('--progress', String((shared.step + 1) / lead.steps.length));
+  };
+
+  const go = (lead, i, { focus = true } = {}) => {
+    shared.step = Math.max(0, Math.min(i, lead.steps.length - 1));
+    leads.forEach(render);
+    if (!focus) return;
+    // Ha az űrlap teteje kicsúszott a képből (mobilon), visszagörgetünk a kérdéshez
+    if (lead.form.getBoundingClientRect().top < 0) lead.form.scrollIntoView({ behavior: scrollBehavior(), block: 'start' });
+    focusField(lead, lead.names[shared.step][0], { preventScroll: true });
+  };
+
+  // A másik példányba is átírjuk a választ, és ott töröljük az elavult hibát
+  const syncFrom = (src, name) => {
+    const a = src.form.elements[name];
+    leads.forEach((lead) => {
+      if (lead === src) return;
+      const b = lead.form.elements[name];
+      if (!a || !b) return;
+      if (a instanceof RadioNodeList) [...b].forEach((r) => { r.checked = r.value === a.value; });
+      else if (a.type === 'checkbox') b.checked = a.checked;
+      else b.value = a.value;
+      showError(lead, name, '');
+    });
+  };
+
+  const setSending = (lead, sending) => {
+    lead.busy = sending;
+    lead.submit.disabled = sending;
+    lead.back.disabled = sending;
+    lead.submitLabel.textContent = sending ? 'Küldés folyamatban…' : 'Ajánlatot kérek';
+    lead.form.setAttribute('aria-busy', String(sending));
+  };
+
+  const showFailure = (lead, detail) => {
+    lead.status.className = 'form__status is-error';
+    lead.status.replaceChildren();
+    const strong = document.createElement('strong');
+    strong.textContent = 'Az ajánlatkérést nem sikerült elküldeni.';
+    const p = document.createElement('span');
+    p.textContent = `${detail} A megadott válaszaid megmaradtak, így újra megpróbálhatod, vagy keress minket közvetlenül: +36 20 504 33 00, mernok@villkiv.hu.`;
+    lead.status.append(strong, p);
+  };
+
+  const send = async (lead) => {
+    const { form, status } = lead;
+    const cfg = emailjsConfig();
+    if (!cfg) {
+      showFailure(lead, 'Az űrlap még nincs bekötve, ezért most nem tud üzenetet továbbítani.');
+      return;
+    }
+    // Spamcsapda: valódi látogató nem tölti ki. Ilyenkor nem küldünk, és sikert sem jelzünk.
+    if (form.elements._gotcha && form.elements._gotcha.value) {
+      showFailure(lead, 'Az üzenetet a rendszer automatikusnak ítélte.');
+      return;
+    }
+
+    setSending(lead, true);
+    status.className = 'form__status is-sending';
+    status.textContent = 'Küldés folyamatban…';
+    let succeeded = false;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
     try {
-      if (location.hash !== '#kapcsolat') history.pushState(null, '', '#kapcsolat');
+      // Az EmailJS-sablon változói: a mezők nevei + oldal (honnan jött) + reply_to
+      const params = {};
+      new FormData(form).forEach((value, key) => {
+        if (!key.startsWith('_')) params[key] = clean(String(value));
+      });
+      params.oldal = location.href.split('#')[0];
+      params.reply_to = params.email || '';
+      const response = await fetch(EMAILJS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ service_id: cfg.service, template_id: cfg.template, user_id: cfg.key, template_params: params }),
+        signal: controller.signal,
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+      // Csak igazolt továbbítás után irányítunk a köszönőoldalra
+      succeeded = true;
+      status.textContent = 'Elküldve, átirányítás…';
+      const service = form.querySelector('input[type="hidden"][name="szolgaltatas"]')?.value || '';
+      const next = form.dataset.success || 'koszonjuk.html';
+      // A köszönőoldal csak ezzel a jelzéssel számol konverziót (közvetlen megnyitásnál nem)
+      try { sessionStorage.setItem(LEAD_KEY, '1'); } catch { /* privát mód: konverzió nélkül */ }
+      location.assign(service ? `${next}?szolgaltatas=${encodeURIComponent(service)}` : next);
+    } catch (err) {
+      const timedOut = err && err.name === 'AbortError';
+      showFailure(
+        lead,
+        timedOut
+          ? 'A szerver nem válaszolt időben.'
+          : navigator.onLine === false
+            ? 'Úgy tűnik, nincs internetkapcsolat.'
+            : 'Hiba történt a továbbítás közben.',
+      );
+    } finally {
+      clearTimeout(timer);
+      if (!succeeded) setSending(lead, false);
+    }
+  };
+
+  leads.forEach((lead) => {
+    const { form } = lead;
+    form.classList.add('offer--wizard');
+    render(lead);
+
+    // Választás után: frissítjük a hibát és a másik példányt
+    const onValue = (e) => {
+      const { name } = e.target;
+      if (!name || name.startsWith('_') || e.target.type === 'hidden') return;
+      syncFrom(lead, name);
+      if (form.querySelector(`[name="${name}"][aria-invalid="true"]`)) showError(lead, name, RULES[name]?.(valueOf(form, name)) || '');
+    };
+    form.addEventListener('input', onValue);
+    form.addEventListener('change', onValue);
+
+    // Egérrel/érintéssel választott válasz után továbblépünk (billentyűzettel nem)
+    let pointerAt = 0;
+    form.addEventListener('pointerdown', (e) => {
+      if (e.target.closest('.opt')) pointerAt = Date.now();
+    });
+    form.addEventListener('click', (e) => {
+      const radio = e.target.closest('.opt__input');
+      if (!radio || Date.now() - pointerAt > 1000) return;
+      pointerAt = 0;
+      const step = lead.steps.indexOf(radio.closest('[data-step]'));
+      setTimeout(() => {
+        if (shared.step === step && !validateStep(lead, step)) go(lead, step + 1);
+      }, 260);
+    });
+
+    lead.back.addEventListener('click', () => go(lead, shared.step - 1));
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (lead.busy) return;
+      const last = lead.steps.length - 1;
+      const bad = validateStep(lead, shared.step);
+      if (bad) {
+        focusField(lead, bad);
+        return;
+      }
+      if (shared.step < last) {
+        go(lead, shared.step + 1);
+        return;
+      }
+      // Utolsó lépés: biztonság kedvéért minden lépést újra ellenőrzünk
+      for (let i = 0; i < lead.steps.length; i++) {
+        const missing = validateStep(lead, i);
+        if (missing) {
+          go(lead, i, { focus: false });
+          focusField(lead, missing);
+          return;
+        }
+      }
+      send(lead);
+    });
+  });
+
+  // Az „Ajánlatot kérek” gombok a legközelebbi űrlaphoz visznek, az aktuális kérdésre
+  document.addEventListener('click', (e) => {
+    const link = e.target.closest('a[data-lead-cta]');
+    if (!link || !leads.length) return;
+    const lead = leads.reduce((best, cur) =>
+      Math.abs(cur.form.getBoundingClientRect().top) < Math.abs(best.form.getBoundingClientRect().top) ? cur : best,
+    );
+    e.preventDefault();
+    lead.form.scrollIntoView({ behavior: scrollBehavior(), block: 'start' });
+    focusField(lead, lead.names[shared.step][0], { preventScroll: true });
+    const section = lead.form.closest('section');
+    try {
+      if (section && location.hash !== `#${section.id}`) history.pushState(null, '', `#${section.id}`);
     } catch {
       /* beágyazott vagy korlátozott környezetben az URL frissítése elhagyható */
     }
   });
-
-  const preset = new URLSearchParams(location.search).get('szolgaltatas');
-  if (preset) selectService(preset);
-
-  /* ---------------------------------------------------------------------
-     Űrlap: ellenőrzés és beküldés
-     --------------------------------------------------------------------- */
-  if (form) {
-    const summary = document.getElementById('urlap-hibak');
-    const status = form.querySelector('.form__status');
-    const submit = form.querySelector('.form__submit');
-    const submitLabel = form.querySelector('.form__submit-label');
-    const serviceSet = document.getElementById('szolgaltatas-mezo');
-    const pointsSet = document.getElementById('pontok-mezo');
-    const pointInputs = pointsSet ? [...pointsSet.querySelectorAll('input')] : [];
-    const POINT_NAMES = pointInputs.map((i) => i.name);
-    const pointInvalid = (i) => i.validity.badInput || (i.value !== '' && !/^\d{1,3}$/.test(i.value.trim())) ||
-      (i.value !== '' && Number(i.value) > Number(i.max));
-
-    // A mérési pontok csak érintésvédelemnél kellenek; elrejtve nem is küldjük el őket
-    const syncPoints = () => {
-      if (!pointsSet) return;
-      const v = form.querySelector('input[name="szolgaltatas"]:checked')?.value;
-      const show = v === 'erintesvedelem' || v === 'mindketto';
-      pointsSet.hidden = !show;
-      pointInputs.forEach((i) => { i.disabled = !show; });
-    };
-    const MESSAGE_MIN = 10;
-    const MESSAGE_MAX = 1000;
-    const TIMEOUT_MS = 15000;
-
-    const clean = (v) => v.replace(/\s+/g, ' ').trim();
-    const phoneDigits = (v) => v.replace(/[\s\-()./]/g, '');
-
-    const rules = {
-      szolgaltatas: () =>
-        form.querySelector('input[name="szolgaltatas"]:checked') ? '' : 'Válaszd ki, melyik szolgáltatás érdekel.',
-      nev: (v) => (clean(v).length >= 2 ? '' : 'Add meg a neved.'),
-      telefon: (v) => {
-        if (!clean(v)) return 'Add meg a telefonszámod.';
-        return /^\+?\d{8,15}$/.test(phoneDigits(v))
-          ? ''
-          : 'Ellenőrizd a telefonszámot – például: +36 30 123 4567 vagy 06 30 123 4567.';
-      },
-      email: (v) => {
-        if (!clean(v)) return 'Add meg az e-mail-címed.';
-        return /^[^\s@]+@[^\s@.]+(\.[^\s@.]+)*\.[^\s@.]{2,}$/.test(v.trim())
-          ? ''
-          : 'Ellenőrizd az e-mail-címet – például: nev@pelda.hu.';
-      },
-      telepules: (v) => (clean(v).length >= 2 ? '' : 'Add meg, melyik településen van az ingatlan.'),
-      fogyasztas: (v) =>
-        clean(v).length >= 2 ? '' : 'Add meg az éves fogyasztást vagy a havi villanyszámlát – ha nem tudod pontosan, egy becslés is elég.',
-      uzenet: (v) => {
-        if (!clean(v)) return 'Írj pár szót a tetőről vagy az elképzelésedről.';
-        if (clean(v).length < MESSAGE_MIN) return `Írj legalább ${MESSAGE_MIN} karaktert – például a tető típusát vagy tájolását.`;
-        return v.length <= MESSAGE_MAX ? '' : `Az üzenet legfeljebb ${MESSAGE_MAX} karakter lehet.`;
-      },
-      pontok: () =>
-        !pointsSet || pointsSet.hidden || !pointInputs.some(pointInvalid)
-          ? ''
-          : 'A darabszámot egész számmal add meg (dugalj, lámpa, kapcsoló: 0–999, elosztó: 0–99).',
-      adatkezeles: () =>
-        form.elements.adatkezeles.checked ? '' : 'Jelöld be, hogy elolvastad az adatkezelési tájékoztatót.',
-    };
-    if (!form.elements.adatkezeles) delete rules.adatkezeles;
-    // Egyszolgáltatásos oldalon (rejtett szolgaltatas mező) nincs mit választani
-    if (!form.querySelector('input[type="radio"][name="szolgaltatas"]')) delete rules.szolgaltatas;
-
-    const valueOf = (name) => (name === 'szolgaltatas' || name === 'pontok' ? '' : form.elements[name].value);
-
-    const LABELS = {
-      szolgaltatas: 'Szolgáltatás',
-      nev: 'Név',
-      telefon: 'Telefonszám',
-      email: 'E-mail-cím',
-      telepules: 'Ingatlan települése',
-      fogyasztas: 'Éves fogyasztás vagy havi villanyszámla',
-      uzenet: 'Rövid üzenet',
-      pontok: 'Mérési pontok',
-      adatkezeles: 'Adatkezelési tájékoztató',
-    };
-
-    const touched = new Set();
-
-    const showError = (name, message) => {
-      const errorEl = document.getElementById(`${name}-hiba`);
-      if (errorEl) errorEl.textContent = message;
-      if (name === 'szolgaltatas') {
-        serviceSet?.classList.toggle('is-invalid', Boolean(message));
-        form.querySelectorAll('input[name="szolgaltatas"]').forEach((r) => {
-          if (message) r.setAttribute('aria-invalid', 'true');
-          else r.removeAttribute('aria-invalid');
-        });
-      } else if (name === 'pontok') {
-        pointInputs.forEach((i) => {
-          if (message && pointInvalid(i)) i.setAttribute('aria-invalid', 'true');
-          else i.removeAttribute('aria-invalid');
-        });
-      } else {
-        const input = form.elements[name];
-        if (message) input.setAttribute('aria-invalid', 'true');
-        else input.removeAttribute('aria-invalid');
-      }
-    };
-
-    const validateField = (name) => {
-      const message = rules[name](valueOf(name));
-      showError(name, message);
-      return message;
-    };
-
-    const validateAll = () =>
-      Object.keys(rules)
-        .map((name) => ({ name, message: validateField(name) }))
-        .filter((r) => r.message);
-
-    const renderSummary = (errors) => {
-      const list = summary.querySelector('ul');
-      list.replaceChildren(
-        ...errors.map(({ name, message }) => {
-          const li = document.createElement('li');
-          const a = document.createElement('a');
-          const first = name === 'pontok' ? pointInputs.find(pointInvalid) || pointInputs[0] : null;
-          a.href = name === 'szolgaltatas' ? '#szolgaltatas-mezo' : first ? `#${first.id}` : `#${name}`;
-          a.textContent = `${LABELS[name]}: ${message}`;
-          a.addEventListener('click', (e) => {
-            e.preventDefault();
-            const target =
-              name === 'szolgaltatas'
-                ? form.querySelector('input[name="szolgaltatas"]')
-                : first || form.elements[name];
-            target.focus();
-          });
-          li.append(a);
-          return li;
-        }),
-      );
-      summary.hidden = errors.length === 0;
-    };
-
-    // Élő ellenőrzés: csak az után jelez, hogy a mezőt egyszer már elhagyták
-    form.addEventListener('focusout', (e) => {
-      const name = POINT_NAMES.includes(e.target.name) ? 'pontok' : e.target.name;
-      if (!rules[name] || name === 'szolgaltatas') return;
-      // A jelölőnégyzetet csak beküldési kísérlet után jelezzük hibásnak, puszta átlépéskor nem
-      if (e.target.type === 'checkbox' && !touched.has(name)) return;
-      if (e.target.value !== '' || e.target.validity?.badInput || touched.has(name)) {
-        touched.add(name);
-        validateField(name);
-      }
-    });
-    form.addEventListener('input', (e) => {
-      const name = POINT_NAMES.includes(e.target.name) ? 'pontok' : e.target.name;
-      if (name === 'uzenet') updateCount();
-      if (touched.has(name)) validateField(name);
-      if (!summary.hidden) renderSummary(validateAllSilently());
-    });
-    form.addEventListener('change', (e) => {
-      if (e.target.name === 'szolgaltatas' && rules.szolgaltatas) {
-        syncPoints();
-        validateField('szolgaltatas');
-        if (touched.has('pontok')) validateField('pontok');
-        if (!summary.hidden) renderSummary(validateAllSilently());
-      }
-    });
-
-    // A hibalistát frissíti, de a mezők hibajelzését csak a már érintett mezőknél mutatja
-    function validateAllSilently() {
-      return Object.keys(rules)
-        .map((name) => {
-          return { name, message: rules[name](valueOf(name)) };
-        })
-        .filter((r) => r.message);
-    }
-
-    syncPoints();
-
-    const counter = form.querySelector('[data-count-for="uzenet"]');
-    function updateCount() {
-      if (counter) counter.textContent = `${form.elements.uzenet.value.length} / ${MESSAGE_MAX}`;
-    }
-    updateCount();
-
-    // Végpont:
-    // 1) EmailJS – ha a <form> data-emailjs-* attribútumai ki vannak töltve
-    //    (public key, service ID, template ID; ezek nyilvánosak, nem titkosak);
-    // 2) az action attribútumban megadott teljes https:// URL (pl. Formspree).
-    // Egyik sincs → az űrlap hibát jelez, és sosem mutat hamis sikert.
-    const EMAILJS_URL = 'https://api.emailjs.com/api/v1.0/email/send';
-    const endpoint = () => {
-      const { emailjsPublicKey: key, emailjsService: service, emailjsTemplate: template } = form.dataset;
-      if (key && service && template) return { url: EMAILJS_URL, emailjs: { key, service, template } };
-      const action = (form.getAttribute('action') || '').trim();
-      if (/^https?:\/\//.test(action)) return { url: action };
-      return null;
-    };
-
-    const setSending = (sending) => {
-      submit.disabled = sending;
-      submitLabel.textContent = sending ? 'Küldés folyamatban…' : 'Ajánlatot kérek';
-      form.setAttribute('aria-busy', String(sending));
-    };
-
-    const showFailure = (detail) => {
-      status.className = 'form__status is-error';
-      status.replaceChildren();
-      const strong = document.createElement('strong');
-      strong.textContent = 'Az ajánlatkérést nem sikerült elküldeni.';
-      const p = document.createElement('span');
-      p.textContent = `${detail} A beírt adataid megmaradtak, így újra megpróbálhatod, vagy keress minket közvetlenül a fenti elérhetőségeken.`;
-      status.append(strong, p);
-    };
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (form.getAttribute('aria-busy') === 'true') return;
-
-      Object.keys(rules).forEach((n) => touched.add(n));
-      const errors = validateAll();
-      renderSummary(errors);
-      if (errors.length) {
-        status.textContent = '';
-        status.className = 'form__status';
-        summary.focus();
-        return;
-      }
-
-      const target = endpoint();
-      if (!target) {
-        showFailure('Az űrlap még nincs bekötve, ezért most nem tud üzenetet továbbítani.');
-        return;
-      }
-
-      // Spamcsapda: valódi látogató nem tölti ki. Ilyenkor nem küldünk, és sikert sem jelzünk.
-      if (form.elements._gotcha && form.elements._gotcha.value) {
-        showFailure('Az üzenetet a rendszer automatikusnak ítélte.');
-        return;
-      }
-
-      setSending(true);
-      status.className = 'form__status is-sending';
-      status.textContent = 'Küldés folyamatban…';
-
-      let succeeded = false;
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
-
-      try {
-        const data = new FormData(form);
-        ['nev', 'telefon', 'email', 'telepules', 'uzenet', 'fogyasztas'].forEach((k) => {
-          if (data.has(k)) data.set(k, String(data.get(k)).trim());
-        });
-        let request;
-        if (target.emailjs) {
-          // Az EmailJS-sablon változói: a mezők nevei + oldal (honnan jött) + reply_to
-          const params = {};
-          data.forEach((value, key) => {
-            if (!key.startsWith('_')) params[key] = String(value);
-          });
-          params.oldal = location.href.split('#')[0];
-          params.reply_to = params.email || '';
-          request = {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              service_id: target.emailjs.service,
-              template_id: target.emailjs.template,
-              user_id: target.emailjs.key,
-              template_params: params,
-            }),
-          };
-        } else {
-          request = { method: 'POST', body: data, headers: { Accept: 'application/json' } };
-        }
-        const response = await fetch(target.url, { ...request, signal: controller.signal });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-        // Csak igazolt továbbítás után irányítunk a köszönőoldalra
-        succeeded = true;
-        status.textContent = 'Elküldve, átirányítás…';
-        const service =
-          form.querySelector('input[name="szolgaltatas"]:checked')?.value ||
-          form.querySelector('input[type="hidden"][name="szolgaltatas"]')?.value ||
-          '';
-        const next = form.dataset.success || 'koszonjuk.html';
-        // A köszönőoldal csak ezzel a jelzéssel számol konverziót (közvetlen megnyitásnál nem)
-        try { sessionStorage.setItem(LEAD_KEY, '1'); } catch { /* privát mód: konverzió nélkül */ }
-        location.assign(service ? `${next}?szolgaltatas=${encodeURIComponent(service)}` : next);
-      } catch (err) {
-        const timedOut = err && err.name === 'AbortError';
-        showFailure(
-          timedOut
-            ? 'A szerver nem válaszolt időben.'
-            : navigator.onLine === false
-              ? 'Úgy tűnik, nincs internetkapcsolat.'
-              : 'Hiba történt a továbbítás közben.',
-        );
-      } finally {
-        clearTimeout(timer);
-        if (!succeeded) setSending(false);
-      }
-    });
-  }
 
   /* ---------------------------------------------------------------------
      Finom megjelenés görgetéskor
@@ -556,6 +499,7 @@
   const tips = document.querySelectorAll('[data-tip]');
   if (tips.length) {
     const chosen = new URLSearchParams(location.search).get('szolgaltatas');
+    const SERVICES = ['erintesvedelem', 'napelem', 'mindketto'];
     const show = chosen === 'mindketto' ? ['erintesvedelem', 'napelem'] : [chosen];
     if (SERVICES.includes(chosen)) {
       tips.forEach((t) => { t.hidden = !show.includes(t.dataset.tip); });

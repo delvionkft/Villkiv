@@ -1083,13 +1083,131 @@ html:not(.js) .timeline-wrap--dark .timeline__num { background: var(--yellow); b
 .contact__list a:hover { color: var(--yellow); }
 .contact__more { font-size: 0.9375rem; color: var(--on-dark-muted); max-width: 44ch; }
 
-.contact__form {
+.contact__form { min-width: 0; }
+
+/* --------------------------------------------------------------------------
+   Ajánlatkérés a hero alatt
+   -------------------------------------------------------------------------- */
+.quick { background: var(--surface); padding-block: clamp(56px, 7vw, 104px); }
+.quick__grid { display: grid; gap: 36px; align-items: start; }
+@media (min-width: 1024px) {
+  .quick__grid { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(48px, 6vw, 88px); }
+  .quick__intro { position: sticky; top: calc(var(--header-h) + 32px); }
+}
+.quick__intro { display: grid; gap: 18px; align-content: start; min-width: 0; }
+.quick__intro .eyebrow, .quick__intro .h2 { margin-bottom: 0; }
+.quick__points { display: grid; gap: 10px; margin-top: 6px; }
+.quick__points li { display: flex; align-items: center; gap: 10px; font-weight: 600; color: var(--ink); }
+.quick__points svg {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  padding: 4px;
+  border-radius: 50%;
+  background: var(--navy-900);
+  color: var(--yellow);
+}
+.deco--quick-dots { left: 2%; bottom: 32px; width: 200px; height: 140px; color: var(--navy-500); opacity: 0.2; }
+
+/* --------------------------------------------------------------------------
+   Ajánlatkérő űrlap (lépésenként)
+   -------------------------------------------------------------------------- */
+.offer {
+  display: grid;
+  gap: 20px;
   min-width: 0;
-  padding: clamp(20px, 4vw, 40px);
+  padding: clamp(20px, 3.5vw, 36px);
+  border: 1px solid var(--border);
   border-radius: var(--r-lg);
   background: var(--bg);
   color: var(--text);
+  box-shadow: 0 24px 48px -28px rgba(11, 30, 58, 0.35);
 }
+.offer__head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; }
+.offer__title { font-family: var(--font-head); font-weight: 700; font-size: 1.25rem; color: var(--ink); }
+.offer__meta { font-size: 0.875rem; color: var(--muted); }
+html:not(.js) .offer__meta-js, html:not(.js) .offer__progress { display: none; }
+.offer__progress { height: 6px; overflow: hidden; border-radius: 999px; background: var(--surface); }
+.offer__bar {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--navy-900), var(--navy-500));
+  transform: scaleX(var(--progress, 0.142857));
+  transform-origin: left center;
+}
+
+/* JS nélkül minden kérdés egymás alatt; JS-sel mindig csak az aktuális látszik.
+   A kártya magassága a kérdéshez igazodik – ez a látogató mozdulatára történik,
+   így elrendezésugrásnak (CLS) nem számít. */
+.offer__steps { display: grid; gap: 32px; }
+.offer--wizard .offer__step:not(.is-current) { display: none; }
+/* Amíg a JS el nem indul (de már fut), csak az első kérdés látszik – így
+   betöltéskor nem csuklik össze az űrlap (nincs elrendezésugrás). */
+.js .offer:not(.offer--wizard) .offer__step + .offer__step { display: none; }
+.offer__step { display: grid; gap: 12px; align-content: start; min-width: 0; margin: 0; padding: 0; border: 0; }
+.offer__q {
+  margin-bottom: 14px;
+  padding: 0;
+  font-family: var(--font-head);
+  font-weight: 680;
+  font-size: clamp(1.25rem, 1.1rem + 0.6vw, 1.5rem);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.offer__qnum {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.8125rem;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--navy-500);
+}
+.offer__options { display: grid; gap: 10px; }
+.opt {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 54px;
+  padding: 12px 16px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  background: var(--bg);
+  color: var(--ink);
+  font-weight: 560;
+  line-height: 1.35;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+.opt:hover { border-color: var(--navy-500); }
+.opt:has(.opt__input:checked) { border-color: var(--navy-900); background: var(--yellow-tint); box-shadow: inset 0 0 0 1px var(--navy-900); }
+.opt:has(.opt__input:focus-visible) { box-shadow: 0 0 0 3px rgba(11, 30, 58, 0.22); }
+.opt:has(.opt__input[aria-invalid="true"]) { border-color: rgba(180, 35, 24, 0.55); }
+.opt__input {
+  appearance: none;
+  display: grid;
+  place-content: center;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  border: 2px solid var(--navy-500);
+  border-radius: 50%;
+  background: var(--bg);
+  cursor: pointer;
+}
+.opt__input::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--navy-900); scale: 0; transition: scale 0.15s ease; }
+.opt__input:checked { border-color: var(--navy-900); }
+.opt__input:checked::before { scale: 1; }
+.opt__input:focus-visible { outline: 2px solid var(--navy-900); outline-offset: 2px; }
+.offer__fields { display: grid; gap: 16px; }
+.offer__nav { display: flex; align-items: center; gap: 12px; }
+.offer__next { margin-left: auto; min-width: min(220px, 100%); justify-content: space-between; }
+@media (max-width: 479px) { .offer__next { flex: 1; min-width: 0; } }
+.btn--ghost { background: transparent; border: 1px solid var(--border-strong); color: var(--ink); }
+.btn--ghost:hover { border-color: var(--navy-900); }
 
 .form { display: grid; gap: 20px; }
 .form__row { display: grid; gap: 20px; }
@@ -1479,6 +1597,11 @@ html:not(.js) .form__submit { display: none; }
   .js .chooser__item + .chooser__item { animation-delay: 0.26s; }
   .js .hero__detail { animation: rise 0.7s var(--ease) 0.35s backwards; }
   .js .band__list li { animation: rise 0.5s var(--ease) backwards; animation-delay: calc(0.3s + var(--i, 0) * 80ms); }
+
+  /* Ajánlatkérő űrlap: az új kérdés finoman beúszik */
+  @keyframes step-in { from { opacity: 0; translate: 0 10px; } }
+  .offer--wizard .offer__step.is-current { animation: step-in 0.35s var(--ease) backwards; }
+  .offer__bar { transition: transform 0.4s var(--ease); }
 
   /* Aloldalak nyitórésze */
   .js .thanks__icon { animation: pop 0.6s var(--ease) 0.05s backwards; }

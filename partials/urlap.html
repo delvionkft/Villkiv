@@ -1,0 +1,137 @@
+<!--
+  AJÁNLATKÉRŐ ŰRLAP – EGYETLEN FORRÁS
+  Ebből készül az index.html felső (hero alatti) és alsó (lábléc feletti)
+  példánya: npm run pages. Az index.html-ben NE ezt a részt szerkeszd.
+  Helyettesítők: {{id}} az űrlap azonosítója, {{p}} a mezőazonosítók
+  előtagja, {{hely}} a példány neve (a beérkező e-mailben is látszik), {{cim}} a
+  szakaszcím azonosítója (ez lesz az űrlap neve a képernyőolvasóknak).
+  Az EmailJS-azonosítók az index.html <html> elemén vannak (egy helyen).
+-->
+<form class="offer" id="{{id}}" data-lead-form data-success="koszonjuk.html" method="post" novalidate aria-labelledby="{{cim}}">
+  <div class="offer__head">
+    <p class="offer__title">Ajánlatkérés</p>
+    <p class="offer__meta">7 rövid kérdés<span class="offer__meta-js"> · a válasz után magától továbblép</span></p>
+  </div>
+  <div class="offer__progress" aria-hidden="true"><span class="offer__bar"></span></div>
+
+  <div class="offer__steps">
+    <fieldset class="offer__step" data-step aria-describedby="{{p}}-segitseg-hiba">
+      <legend class="offer__q"><span class="offer__qnum">1. kérdés a 7-ből</span> Miben tudunk segíteni?</legend>
+      <div class="offer__options">
+        <label class="opt"><input class="opt__input" type="radio" name="segitseg" value="Új napelemes rendszert szeretnék telepíttetni" required><span class="opt__label">Új napelemes rendszert szeretnék telepíttetni</span></label>
+        <label class="opt"><input class="opt__input" type="radio" name="segitseg" value="Meglévő napelemes rendszeremet szeretném bővíteni" required><span class="opt__label">Meglévő napelemes rendszeremet szeretném bővíteni</span></label>
+        <label class="opt"><input class="opt__input" type="radio" name="segitseg" value="Akkumulátoros energiatárolót szeretnék telepíttetni" required><span class="opt__label">Akkumulátoros energiatárolót szeretnék telepíttetni</span></label>
+        <label class="opt"><input class="opt__input" type="radio" name="segitseg" value="Napelemes rendszert és akkumulátort is szeretnék" required><span class="opt__label">Napelemes rendszert és akkumulátort is szeretnék</span></label>
+        <label class="opt"><input class="opt__input" type="radio" name="segitseg" value="Szakértői tanácsadásra lenne szükségem" required><span class="opt__label">Szakértői tanácsadásra lenne szükségem</span></label>
+      </div>
+      <p class="field__error" id="{{p}}-segitseg-hiba" data-error-for="segitseg"></p>
+    </fieldset>
+
+    <fieldset class="offer__step" data-step aria-describedby="{{p}}-cel-hiba">
+      <legend class="offer__q"><span class="offer__qnum">2. kérdés a 7-ből</span> Mi a legfontosabb célod a napelemes rendszerrel?</legend>
+      <div class="offer__options">
+        <label class="opt"><input class="opt__input" type="radio" name="cel" value="Szeretném csökkenteni a villanyszámlámat" required><span class="opt__label">Szeretném csökkenteni a villanyszámlámat</span></label>
+        <label class="opt"><input class="opt__input" type="radio" name="cel" value="Szeretném fedezni a megnövekedett energiafogyasztásomat" required><span class="opt__label">Szeretném fedezni a megnövekedett energiafogyasztásomat</span></label>
+        <label class="opt"><input class="opt__input" type="radio" name="cel" value="Elektromos autó, klíma vagy hőszivattyú miatt lenne szükségem rá" required><span class="opt__label">Elektromos autó, klíma vagy hőszivattyú miatt lenne szükségem rá</span></label>
+        <label class="opt"><input class="opt__input" type="radio" name="cel" value="Nagyobb energiafüggetlenséget szeretnék elérni" required><span class="opt__label">Nagyobb energiafüggetlenséget szeretnék elérni</span></label>
+        <label class="opt"><input class="opt__input" type="radio" name="cel" value="Még nem döntöttem el, milyen megoldás lenne ideális" required><span class="opt__label">Még nem döntöttem el, milyen megoldás lenne ideális</span></label>
+      </div>
+      <p class="field__error" id="{{p}}-cel-hiba" data-error-for="cel"></p>
+    </fieldset>
+
+    <fieldset class="offer__step" data-step aria-describedby="{{p}}-ingatlan-hiba">
+      <legend class="offer__q"><span class="offer__qnum">3. kérdés a 7-ből</span> Milyen típusú ingatlanhoz keresel megoldást?</legend>
+      <div class="offer__options">
+        <label class="opt"><input class="opt__input" type="radio" name="ingatlan" value="Családi ház" required><span class="opt__label">Családi ház</span></label>
+        <label class="opt"><input class="opt__input" type="radio" name="ingatlan" value="Ikerház / sorház" required><span class="opt__label">Ikerház / sorház</span></label>
+        <label class="opt"><input class="opt__input" type="radio" name="ingatlan" value="Nyaraló" required><span class="opt__label">Nyaraló</span></label>
+        <label class="opt"><input class="opt__input" type="radio" name="ingatlan" value="Vállalkozás / telephely" required><span class="opt__label">Vállalkozás / telephely</span></label>
+        <label class="opt"><input class="opt__input" type="radio" name="ingatlan" value="Egyéb" required><span class="opt__label">Egyéb</span></label>
+      </div>
+      <p class="field__error" id="{{p}}-ingatlan-hiba" data-error-for="ingatlan"></p>
+    </fieldset>
+
+    <fieldset class="offer__step" data-step aria-describedby="{{p}}-szamla-hiba">
+      <legend class="offer__q"><span class="offer__qnum">4. kérdés a 7-ből</span> Körülbelül mennyi a havi villanyszámlád?</legend>
+      <div class="offer__options">
+        <label class="opt"><input class="opt__input" type="radio" name="szamla" value="10 000 Ft alatt" required><span class="opt__label">10 000 Ft alatt</span></label>
+        <label class="opt"><input class="opt__input" type="radio" name="szamla" value="10 000–20 000 Ft között" required><span class="opt__label">10 000–20 000 Ft között</span></label>
+        <label class="opt"><input class="opt__input" type="radio" name="szamla" value="20 000–40 000 Ft között" required><span class="opt__label">20 000–40 000 Ft között</span></label>
+        <label class="opt"><input class="opt__input" type="radio" name="szamla" value="40 000 Ft felett" required><span class="opt__label">40 000 Ft felett</span></label>
+        <label class="opt"><input class="opt__input" type="radio" name="szamla" value="Nem tudom / már rendelkezem napelemes rendszerrel" required><span class="opt__label">Nem tudom / már rendelkezem napelemes rendszerrel</span></label>
+      </div>
+      <p class="field__error" id="{{p}}-szamla-hiba" data-error-for="szamla"></p>
+    </fieldset>
+
+    <fieldset class="offer__step" data-step aria-describedby="{{p}}-idozites-hiba">
+      <legend class="offer__q"><span class="offer__qnum">5. kérdés a 7-ből</span> Mikorra szeretnéd megvalósítani a beruházást?</legend>
+      <div class="offer__options">
+        <label class="opt"><input class="opt__input" type="radio" name="idozites" value="Amint lehetséges" required><span class="opt__label">Amint lehetséges</span></label>
+        <label class="opt"><input class="opt__input" type="radio" name="idozites" value="1–3 hónapon belül" required><span class="opt__label">1–3 hónapon belül</span></label>
+        <label class="opt"><input class="opt__input" type="radio" name="idozites" value="3–6 hónapon belül" required><span class="opt__label">3–6 hónapon belül</span></label>
+        <label class="opt"><input class="opt__input" type="radio" name="idozites" value="Egyelőre tájékozódom a lehetőségekről" required><span class="opt__label">Egyelőre tájékozódom a lehetőségekről</span></label>
+      </div>
+      <p class="field__error" id="{{p}}-idozites-hiba" data-error-for="idozites"></p>
+    </fieldset>
+
+    <fieldset class="offer__step" data-step>
+      <legend class="offer__q"><span class="offer__qnum">6. kérdés a 7-ből</span> Hol található az ingatlan?</legend>
+      <div class="field">
+        <label class="field__label" for="{{p}}-telepules">Település vagy irányítószám <span class="req" aria-hidden="true">*</span></label>
+        <input class="field__input" id="{{p}}-telepules" name="telepules" type="text" autocomplete="address-level2" required minlength="2" maxlength="80" placeholder="pl. Békéscsaba vagy 5600" aria-describedby="{{p}}-telepules-hiba">
+        <p class="field__error" id="{{p}}-telepules-hiba" data-error-for="telepules"></p>
+      </div>
+    </fieldset>
+
+    <fieldset class="offer__step" data-step>
+      <legend class="offer__q"><span class="offer__qnum">7. kérdés a 7-ből</span> Hogyan vehetjük fel veled a kapcsolatot?</legend>
+      <div class="offer__fields">
+        <div class="field">
+          <label class="field__label" for="{{p}}-nev">Teljes név <span class="req" aria-hidden="true">*</span></label>
+          <input class="field__input" id="{{p}}-nev" name="nev" type="text" autocomplete="name" required minlength="2" maxlength="120" aria-describedby="{{p}}-nev-hiba">
+          <p class="field__error" id="{{p}}-nev-hiba" data-error-for="nev"></p>
+        </div>
+        <div class="field">
+          <label class="field__label" for="{{p}}-telefon">Telefonszám <span class="req" aria-hidden="true">*</span></label>
+          <input class="field__input" id="{{p}}-telefon" name="telefon" type="tel" inputmode="tel" autocomplete="tel" required maxlength="30" placeholder="+36 30 123 4567" aria-describedby="{{p}}-telefon-hiba">
+          <p class="field__error" id="{{p}}-telefon-hiba" data-error-for="telefon"></p>
+        </div>
+        <div class="field">
+          <label class="field__label" for="{{p}}-email">E-mail-cím <span class="req" aria-hidden="true">*</span></label>
+          <input class="field__input" id="{{p}}-email" name="email" type="email" inputmode="email" autocomplete="email" required maxlength="160" placeholder="nev@pelda.hu" aria-describedby="{{p}}-email-hiba">
+          <p class="field__error" id="{{p}}-email-hiba" data-error-for="email"></p>
+        </div>
+        <div class="field field--check">
+          <div class="check">
+            <input class="check__input" id="{{p}}-adatkezeles" name="adatkezeles" type="checkbox" value="tudomásul vette" required aria-describedby="{{p}}-adatkezeles-hiba">
+            <label class="check__label" for="{{p}}-adatkezeles">Elolvastam és tudomásul vettem az <a href="adatvedelem.html" target="_blank" rel="noopener">adatkezelési tájékoztatót</a>. <span class="req" aria-hidden="true">*</span></label>
+          </div>
+          <p class="field__error" id="{{p}}-adatkezeles-hiba" data-error-for="adatkezeles"></p>
+        </div>
+      </div>
+    </fieldset>
+  </div>
+
+  <!-- Spamszűrő csapda: valódi felhasználó nem látja és nem tölti ki. -->
+  <div class="hp" aria-hidden="true">
+    <label for="{{p}}-weboldal">Ezt a mezőt hagyd üresen</label>
+    <input id="{{p}}-weboldal" name="_gotcha" type="text" tabindex="-1" autocomplete="off">
+  </div>
+  <input type="hidden" name="szolgaltatas" value="napelem">
+  <input type="hidden" name="targy" value="Új napelemes ajánlatkérés a weboldalról">
+  <input type="hidden" name="urlap" value="{{hely}}" data-no-sync>
+
+  <div class="offer__nav">
+    <button class="btn btn--ghost offer__back" type="button" data-back hidden>
+      <svg class="btn__icon btn__icon--back" aria-hidden="true"><use href="#i-arrow"/></svg>
+      Vissza
+    </button>
+    <button class="btn btn--primary form__submit offer__next" type="submit">
+      <span class="form__submit-label">Tovább</span>
+      <svg class="btn__icon" aria-hidden="true"><use href="#i-arrow"/></svg>
+    </button>
+  </div>
+  <noscript><p class="form__noscript">Az űrlap küldéséhez JavaScript szükséges. Hívj minket: <a href="tel:+36205043300">+36 20 504 33 00</a>, vagy írj: <a href="mailto:mernok@villkiv.hu">mernok@villkiv.hu</a>.</p></noscript>
+  <p class="form__legal">Minden kérdés megválaszolása kötelező. Az adataidat csak az ajánlatkérés megválaszolásához használjuk.</p>
+  <div class="form__status" role="status" aria-live="polite"></div>
+</form>

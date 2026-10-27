@@ -32,6 +32,14 @@ npm run pages    # újragenerálja a gyökérben lévő aloldalakat
 
 A teszt jelez, ha egy aloldal lábléce eltér a főoldalétól.
 
+## Ajánlatkérő űrlap
+
+- **Két példány:** a hero alatt (`#ajanlat`) és a lábléc felett (`#kapcsolat`). Mindkettő a `partials/urlap.html` egyetlen forrásából készül: a kérdéseket, válaszokat ott szerkeszd, majd `npm run pages`. Az `index.html`-ben a két jelölő (`<!-- urlap:felso -->`, `<!-- urlap:also -->`) közötti részt ne kézzel írd át.
+- **7 lépés,** minden kérdés kötelező, a végén kötelező adatkezelési jelölőnégyzet. Egyszerre egy kérdés látszik; egérrel/érintéssel választott válasz után magától továbblép, billentyűzettel a „Tovább” gomb visz (a nyilak nem léptetnek – akadálymentesség).
+- **A két példány együtt mozog:** amit az egyikben megadsz, a másik is tudja, és ugyanannál a kérdésnél tart.
+- Az „Ajánlatot kérek” gombok (`data-lead-cta`) a látogatóhoz legközelebbi űrlaphoz visznek, az aktuális kérdésre.
+- JavaScript nélkül az összes kérdés egymás alatt látszik, a küldés gomb helyett telefonszám és e-mail-cím jelenik meg.
+
 ## Meta Pixel és sütisáv
 
 1. A Pixel ID-t (*Meta Events Manager → Adatforrások*, 15–16 számjegy) írd az `index.html` elején a `<html data-meta-pixel="">` attribútumba, majd: `npm run pages` (az aloldalak innen veszik át).
@@ -77,21 +85,26 @@ Az űrlap az [EmailJS](https://www.emailjs.com/) szolgáltatáson keresztül kü
    - *Subject:* `{{targy}} – {{nev}}, {{telepules}}`
    - *Content* például:
      ```
+     Miben segíthetünk: {{segitseg}}
+     Cél: {{cel}}
+     Ingatlan: {{ingatlan}}
+     Havi villanyszámla: {{szamla}}
+     Mikorra: {{idozites}}
+     Település / irányítószám: {{telepules}}
+
      Név: {{nev}}
      Telefon: {{telefon}}
      E-mail: {{email}}
-     Település: {{telepules}}
-     Éves fogyasztás / havi számla: {{fogyasztas}}
-     Üzenet: {{uzenet}}
-     Szolgáltatás: {{szolgaltatas}}
      Adatkezelési tájékoztató: {{adatkezeles}}
+
+     Melyik űrlapról: {{urlap}} (felső = hero alatti, alsó = lábléc feletti)
      Beküldve innen: {{oldal}}
      ```
    → **Template ID**
 4. **Account → General:** **Public Key**.
-5. A három értéket írd az `index.html` `<form id="ajanlat-urlap">` elemébe:
+5. A három értéket írd az `index.html` elején a `<html>` elembe (mindkét űrlap ezeket használja):
    ```html
-   data-emailjs-public-key="..." data-emailjs-service="service_..." data-emailjs-template="template_..."
+   <html lang="hu" … data-emailjs-public-key="..." data-emailjs-service="service_..." data-emailjs-template="template_...">
    ```
 6. **Biztonság (kötelező):**
    - **A Private Key-t SOHA ne írd az oldalba.** A Public Key, a Service ID és a Template ID nyilvános, ezek látszhatnak.
@@ -107,7 +120,6 @@ Működés:
 - Ha a három azonosító közül bármelyik hiányzik, az űrlap „nincs bekötve” hibát ad.
 - JavaScript nélkül az EmailJS nem működik: ilyenkor a küldés gomb helyett a telefonszám és az e-mail-cím jelenik meg.
 - Az ingyenes EmailJS-csomag havi kerete korlátozott. Ha elfogy, az űrlap hibát jelez (nem nyel el kérést), de érdemes figyelni.
-- Tartalék: ha nincs EmailJS-azonosító, de az `action` attribútumban teljes `https://` URL van (pl. Formspree), arra küld `multipart/form-data` formában.
 
 ## Közzététel Vercelen
 

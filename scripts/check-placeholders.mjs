@@ -16,13 +16,11 @@ for (const file of pageFiles) {
     for (const m of line.matchAll(/\[[^\]\n]{2,}\]/g)) found.add(m[0]);
     if (/data-placeholder/.test(line) && found.size === 0) found.add('data-placeholder');
     if (/href="(tel:|mailto:|#)"/.test(line)) found.add('üres hivatkozás (tel:/mailto:/#)');
-    if (/<form\b/.test(line)) {
+    // Az EmailJS-azonosítók a <html> elemen vannak (mindkét űrlap ezeket használja)
+    if (/<html\b/.test(line) && /data-lead-form/.test(html)) {
       const attr = (n) => (line.match(new RegExp(`${n}="([^"]*)"`)) || [])[1]?.trim() || '';
-      const emailjs = ['data-emailjs-public-key', 'data-emailjs-service', 'data-emailjs-template'];
-      const missing = emailjs.filter((n) => !attr(n));
-      if (missing.length && !/^https:\/\//.test(attr('action'))) {
-        found.add(`űrlap nincs bekötve – hiányzik: ${missing.join(', ')}`);
-      }
+      const missing = ['data-emailjs-public-key', 'data-emailjs-service', 'data-emailjs-template'].filter((n) => !attr(n));
+      if (missing.length) found.add(`űrlap nincs bekötve – hiányzik a <html> elemről: ${missing.join(', ')}`);
     }
     const pixel = line.match(/<html[^>]*data-meta-pixel="([^"]*)"/);
     if (pixel && !/^\d{6,20}$/.test(pixel[1].trim())) {
