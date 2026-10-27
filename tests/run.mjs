@@ -38,8 +38,19 @@ function assert(cond, msg) {
   if (!cond) throw new Error(msg);
 }
 
+// Az éles EmailJS-t a tesztek SOHA nem hívhatják (valódi e-mail menne ki): alapból
+// minden ilyen kérést elvágunk és hibának számítunk. Ahol kell, page.route() felülírja.
+const realEmailCalls = [];
+async function guardEmail(context) {
+  await context.route(/api\.emailjs\.com/, (route) => {
+    realEmailCalls.push(route.request().url());
+    return route.abort();
+  });
+}
+
 async function open(viewport, { url = BASE, reducedMotion = 'no-preference' } = {}) {
   const context = await browser.newContext({ viewport, reducedMotion, locale: 'hu-HU' });
+  await guardEmail(context);
   const page = await context.newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
@@ -494,6 +505,7 @@ await test('a gombok a legközelebbi űrlaphoz visznek: fent a felsőhöz, lent 
 
 await test('bekötetlen űrlap (nincs EmailJS-azonosító): hibaállapot, SOHA nem mutat sikert', async () => {
   const { page, context } = await open({ width: 1280, height: 800 });
+  await configure(page, { emailjsPublicKey: '', emailjsService: '', emailjsTemplate: '' });
   await complete(page);
   await page.click('#urlap-felso .form__submit');
   const s = await page.evaluate(() => ({
@@ -625,6 +637,14 @@ await test('Vercel: a build kimenete a dist mappa (különben „No Output Direc
   assert(cfg.buildCommand === 'npm run build', `buildCommand: ${cfg.buildCommand}`);
 });
 
+await test('éles index.html: az EmailJS be van kötve (mindhárom nyilvános azonosító megvan)', async () => {
+  const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const tag = html.match(/<html[^>]*>/)[0];
+  const get = (n) => (tag.match(new RegExp(`${n}="([^"]*)"`)) || [])[1] || '';
+  assert(/^[\w-]{10,30}$/.test(get('data-emailjs-public-key')), 'Public Key hiányzik');
+  assert(/^service_\w+$/.test(get('data-emailjs-service')) && /^template_\w+$/.test(get('data-emailjs-template')), `service/template: ${get('data-emailjs-service')} ${get('data-emailjs-template')}`);
+});
+
 await test('éles index.html: nincs privát kulcs a forrásban', async () => {
   const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
   assert(!/accessToken|private[_-]?key/i.test(html.replace(/<!--[\s\S]*?-->/g, '')), 'privát kulcsra utaló szöveg az oldalban');
@@ -738,6 +758,7 @@ const PIXEL = '123456789012345';
 // A Pixel ID-t a kiszolgált HTML-be írjuk; a Meta szkriptjét üres csonkkal helyettesítjük és számoljuk.
 async function openWithPixel(viewport, { url = BASE, id = PIXEL, init } = {}) {
   const context = await browser.newContext({ viewport, locale: 'hu-HU' });
+  await guardEmail(context);
   const fb = [];
   await context.route(/facebook\.(net|com)/, (route) => {
     fb.push(route.request().url());
@@ -1136,6 +1157,10 @@ await test('érintőképernyőn nincs egérkövető fény', async () => {
   await page.goto(BASE, { waitUntil: 'networkidle' });
   assert((await page.evaluate(() => document.querySelectorAll('.spotlight').length)) === 0, 'érintőképernyőn is létrejött');
   await context.close();
+});
+
+await test('a tesztek egyetlen valódi EmailJS-kérést sem küldtek', async () => {
+  assert(realEmailCalls.length === 0, `valódi kérések: ${realEmailCalls.join(', ')}`);
 });
 
 await browser.close();
