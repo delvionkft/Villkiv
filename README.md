@@ -109,6 +109,14 @@ Működés:
 - Az ingyenes EmailJS-csomag havi kerete korlátozott. Ha elfogy, az űrlap hibát jelez (nem nyel el kérést), de érdemes figyelni.
 - Tartalék: ha nincs EmailJS-azonosító, de az `action` attribútumban teljes `https://` URL van (pl. Formspree), arra küld `multipart/form-data` formában.
 
+## Közzététel Vercelen
+
+A repó Vercelhez kötve automatikusan települ. A beállításokat a `vercel.json` tartalmazza: `npm ci`, majd `npm run build`, a kimenet a **`dist`** mappa. Ha ez hiányzik, a Vercel a `public` mappát keresi, és a telepítés „No Output Directory” hibával elszáll.
+
+- A *Project Settings → Build and Deployment* felületen ne írd felül a build- és kimeneti beállításokat (vagy ugyanezt add meg).
+- *Settings → Git → Production Branch*: az az ág legyen, amelyikről élesíteni akarsz.
+- Vercel esetén az impresszumba a Vercel Inc. adatai kerülnek tárhelyszolgáltatóként.
+
 ## Közzététel Netlify Drop-pal
 
 ```bash

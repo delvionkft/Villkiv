@@ -590,6 +590,13 @@ await test('küldés közben a gomb letiltva, dupla kattintás egy kérést kül
   );
 });
 
+await test('Vercel: a build kimenete a dist mappa (különben „No Output Directory” hiba)', async () => {
+  const cfg = JSON.parse(await readFile(new URL('../vercel.json', import.meta.url), 'utf8'));
+  const dist = await readFile(new URL('../scripts/build-dist.mjs', import.meta.url), 'utf8');
+  assert(cfg.outputDirectory === 'dist' && /['"]dist['"]/.test(dist), `outputDirectory: ${cfg.outputDirectory}`);
+  assert(cfg.buildCommand === 'npm run build', `buildCommand: ${cfg.buildCommand}`);
+});
+
 await test('éles index.html: nincs privát kulcs a forrásban', async () => {
   const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
   assert(!/accessToken|private[_-]?key/i.test(html.replace(/<!--[\s\S]*?-->/g, '')), 'privát kulcsra utaló szöveg az oldalban');
