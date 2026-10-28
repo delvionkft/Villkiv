@@ -1532,6 +1532,28 @@ html:not(.js) .form__submit { display: none; }
   pointer-events: none;
 }
 
+/* Mérés-ellenőrző (?pixel-teszt) – csak hibakereséshez */
+.pixel-debug {
+  position: fixed;
+  top: calc(var(--header-h) + 8px);
+  left: 8px;
+  z-index: 70;
+  width: min(360px, calc(100vw - 16px));
+  padding: 12px 14px;
+  border: 2px solid var(--navy-900);
+  border-radius: var(--r-md);
+  background: var(--bg);
+  color: var(--ink);
+  font: 13px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  box-shadow: 0 12px 32px rgba(4, 12, 26, 0.3);
+}
+.pixel-debug__title { font-weight: 700; margin-bottom: 6px; }
+.pixel-debug dl { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; }
+.pixel-debug dt { color: var(--muted); }
+.pixel-debug dd { font-weight: 600; overflow-wrap: anywhere; }
+.pixel-debug__actions { display: flex; gap: 8px; margin-top: 10px; }
+.pixel-debug__actions button { min-height: 36px; padding: 4px 10px; border: 1px solid var(--navy-900); border-radius: 6px; background: var(--bg); font: inherit; cursor: pointer; }
+
 /* --------------------------------------------------------------------------
    Sütisáv (csak ha Meta Pixel ID van megadva)
    -------------------------------------------------------------------------- */

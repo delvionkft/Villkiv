@@ -920,6 +920,39 @@ await test('ha a köszönőoldalon fogad el először, a Lead akkor is beérkezi
   await context.close();
 });
 
+await test('mérés-ellenőrző (?pixel-teszt): kiírja az ID-t, a döntést, a szkript állapotát és a Meta felé kiment kéréseket', async () => {
+  // Valósághű csonk: mint az igazi fbevents.js, feldolgozza a sort és /tr kéréssel küld
+  const FAKE = `(function(){var f=window.fbq,ids=[];f.callMethod=function(){var a=[].slice.call(arguments);
+    if(a[0]==='init')ids.push(a[1]);else if(a[0]==='track')ids.forEach(function(id){new Image().src='https://www.facebook.com/tr?id='+id+'&ev='+a[1];});};
+    var q=f.queue.slice();f.queue.length=0;q.forEach(function(a){f.callMethod.apply(f,a);});})();`;
+  const { page, context } = await openWithPixel({ width: 1280, height: 800 }, { url: `${BASE}?pixel-teszt` });
+  await page.route(/connect\.facebook\.net/, (r) => r.fulfill({ status: 200, contentType: 'text/javascript', body: FAKE }));
+  await page.route(/facebook\.com\/tr/, (r) => r.fulfill({ status: 200, contentType: 'image/gif', body: '' }));
+  const read = () => page.evaluate(() => Object.fromEntries([...document.querySelectorAll('.pixel-debug dt')].map((dt) => [dt.textContent, dt.nextElementSibling.textContent])));
+  const before = await read();
+  assert(before['Pixel ID az oldalon'] === PIXEL && before['Sütidöntés'] === 'még nincs döntés' && /nincs betöltve/.test(before['Meta-szkript']), JSON.stringify(before));
+  await page.click('[data-consent="grant"]');
+  await page.waitForFunction(() => /^[1-9]/.test([...document.querySelectorAll('.pixel-debug dd')].pop()?.textContent || ''));
+  const after = await read();
+  assert(after['Sütidöntés'] === 'elfogadva' && after['Meta-szkript'] === 'betöltve' && after['Pixelnek átadott események'] === 'PageView' && Number(after['Kérés a Meta felé']) >= 1, JSON.stringify(after));
+  await axe(page, 'mérés-ellenőrző');
+  // A lapon a következő oldalon is bekapcsolva marad, paraméter nélkül is
+  await page.goto(`${BASE}cookie.html`, { waitUntil: 'networkidle' });
+  assert(await page.locator('.pixel-debug').isVisible(), 'a köszönő-/aloldalon eltűnt');
+  // Paraméter nélkül, új lapon nincs panel
+  const fresh = await context.newPage();
+  await fresh.goto(BASE, { waitUntil: 'networkidle' });
+  assert((await fresh.locator('.pixel-debug').count()) === 0, 'látogatóknak is megjelent');
+  await context.close();
+
+  // Blokkolt Meta-szkript (pl. reklámblokkoló)
+  const blocked = await openWithPixel({ width: 1280, height: 800 }, { url: `${BASE}?pixel-teszt` });
+  await blocked.page.route(/connect\.facebook\.net/, (r) => r.abort('blockedbyclient'));
+  await blocked.page.click('[data-consent="grant"]');
+  await blocked.page.waitForFunction(() => /BLOKKOLVA/.test(document.querySelector('.pixel-debug')?.textContent || ''));
+  await blocked.context.close();
+});
+
 console.log('\nGörgetéskövetés');
 await test('a gyakori kérdések szekció nincs az oldalon', async () => {
   const { page, context } = await open({ width: 1280, height: 800 });

@@ -538,6 +538,10 @@
     } catch { /* tárolás nélkül a következő oldalon újra kérdezünk */ }
   };
 
+  // A mérés-ellenőrző (?pixel-teszt) ebből mutatja, mi történt a Pixellel
+  const pixelState = { script: 'nincs betöltve – még nincs elfogadás', events: [] };
+  let renderPixelDebug = () => {};
+
   const loadPixel = () => {
     if (!/^\d{6,20}$/.test(PIXEL_ID) || window.fbq) return;
     // A Meta hivatalos betöltőkódja, olvashatóan
@@ -554,12 +558,23 @@
     const script = document.createElement('script');
     script.async = true;
     script.src = 'https://connect.facebook.net/en_US/fbevents.js';
+    script.addEventListener('load', () => { pixelState.script = 'betöltve'; renderPixelDebug(); });
+    script.addEventListener('error', () => {
+      pixelState.script = 'BLOKKOLVA – reklámblokkoló, böngészővédelem vagy hálózati szűrő';
+      renderPixelDebug();
+    });
+    pixelState.script = 'töltődik…';
     document.head.append(script);
     // Automatikus eseményfelismerés ki: csak az általunk küldött eseményeket mérjük
     fbq('set', 'autoConfig', false, PIXEL_ID);
     fbq('init', PIXEL_ID);
     fbq('track', 'PageView');
-    if (leadPending) fbq('track', 'Lead');
+    pixelState.events.push('PageView');
+    if (leadPending) {
+      fbq('track', 'Lead');
+      pixelState.events.push('Lead');
+    }
+    renderPixelDebug();
   };
 
   // Visszavonáskor a Meta első féltől származó sütijeit is töröljük (minden domainszinten)
@@ -571,6 +586,78 @@
       domains.forEach((d) => { document.cookie = `${name}=; Max-Age=0; path=/${d}`; });
     });
   };
+
+  /* Mérés-ellenőrző: az URL végére írt ?pixel-teszt bekapcsolja (a böngészőlap
+     bezárásáig megmarad, a köszönőoldalon is). Kiírja a Pixel ID-t, a sütidöntést,
+     a Meta-szkript állapotát és a Meta felé ténylegesen kiment kéréseket. */
+  const DEBUG_KEY = 'villkiv-pixel-teszt';
+  let debugOn = new URLSearchParams(location.search).has('pixel-teszt');
+  try {
+    if (debugOn) sessionStorage.setItem(DEBUG_KEY, '1');
+    debugOn = debugOn || sessionStorage.getItem(DEBUG_KEY) === '1';
+  } catch { /* tárolás nélkül csak az adott oldalon működik */ }
+  if (debugOn) {
+    const box = document.createElement('section');
+    box.className = 'pixel-debug';
+    box.setAttribute('aria-label', 'Mérés-ellenőrző');
+    document.body.append(box);
+    let sent = 0;
+    try {
+      new PerformanceObserver((list) => {
+        list.getEntries().forEach((e) => {
+          if (/facebook\.com\/tr/.test(e.name)) {
+            sent++;
+            renderPixelDebug();
+          }
+        });
+      }).observe({ type: 'resource', buffered: true });
+    } catch { /* régi böngésző: a kérések száma nem látszik */ }
+    const decision = () => ({ granted: 'elfogadva', denied: 'elutasítva' })[readConsent()] || 'még nincs döntés';
+    const button = (label, onClick) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = label;
+      b.addEventListener('click', onClick);
+      return b;
+    };
+    renderPixelDebug = () => {
+      const rows = [
+        ['Pixel ID az oldalon', PIXEL_ID || 'NINCS – régi verzió fut, vagy üres az ID'],
+        ['Sütidöntés', decision()],
+        ['Meta-szkript', pixelState.script],
+        ['Pixelnek átadott események', pixelState.events.join(', ') || '–'],
+        ['Kérés a Meta felé', String(sent)],
+      ];
+      const title = document.createElement('p');
+      title.className = 'pixel-debug__title';
+      title.textContent = 'Mérés-ellenőrző';
+      const dl = document.createElement('dl');
+      rows.forEach(([k, v]) => {
+        const dt = document.createElement('dt');
+        dt.textContent = k;
+        const dd = document.createElement('dd');
+        dd.textContent = v;
+        dl.append(dt, dd);
+      });
+      const actions = document.createElement('div');
+      actions.className = 'pixel-debug__actions';
+      actions.append(
+        button('Döntés törlése', () => {
+          try { localStorage.removeItem(CONSENT_KEY); } catch { /* nincs mit törölni */ }
+          clearPixelCookies();
+          location.reload();
+        }),
+        button('Bezárás', () => {
+          try { sessionStorage.removeItem(DEBUG_KEY); } catch { /* nincs mit törölni */ }
+          box.remove();
+          renderPixelDebug = () => {};
+        }),
+      );
+      box.replaceChildren(title, dl, actions);
+      console.info('[pixel-teszt]', Object.fromEntries(rows));
+    };
+    renderPixelDebug();
+  }
 
   if (PIXEL_ID) {
     let banner = null;
@@ -588,6 +675,7 @@
       const before = readConsent();
       saveConsent(marketing);
       closeBanner();
+      renderPixelDebug();
       if (marketing) loadPixel();
       else if (before === 'granted' || window.fbq) {
         // A már betöltött Pixelt csak újratöltéssel lehet leállítani
