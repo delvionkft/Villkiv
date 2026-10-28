@@ -46,11 +46,21 @@ async function guardEmail(context) {
     realEmailCalls.push(route.request().url());
     return route.abort();
   });
+  // A valódi Meta-szervert sem érhetik el: a Pixel-tesztek saját csonkot kapnak
+  await context.route(/facebook\.(net|com)/, (route) => {
+    realEmailCalls.push(route.request().url());
+    return route.abort();
+  });
 }
 
 async function open(viewport, { url = BASE, reducedMotion = 'no-preference' } = {}) {
   const context = await browser.newContext({ viewport, reducedMotion, locale: 'hu-HU' });
   await guardEmail(context);
+  // Az általános tesztekben a látogató már döntött (elutasította a hirdetésmérést),
+  // így a sütisáv nem takar ki semmit; a sávot a saját tesztjei vizsgálják.
+  await context.addInitScript(() => {
+    try { localStorage.setItem('villkiv-suti', JSON.stringify({ v: 1, marketing: false, t: Date.now() })); } catch {}
+  });
   const page = await context.newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
@@ -645,6 +655,15 @@ await test('éles index.html: az EmailJS be van kötve (mindhárom nyilvános az
   assert(/^service_\w+$/.test(get('data-emailjs-service')) && /^template_\w+$/.test(get('data-emailjs-template')), `service/template: ${get('data-emailjs-service')} ${get('data-emailjs-template')}`);
 });
 
+await test('éles oldalak: a Meta Pixel ID be van állítva, és sehol nincs hozzájárulás nélkül betöltő Meta-kód', async () => {
+  const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  assert(/<html[^>]*data-meta-pixel="\d{15,16}"/.test(html), 'a Pixel ID hiányzik vagy hibás');
+  for (const f of ['index.html', 'koszonjuk.html', 'adatvedelem.html', 'cookie.html', 'impresszum.html']) {
+    const src = (await readFile(new URL(`../${f}`, import.meta.url), 'utf8')).replace(/<!--[\s\S]*?-->/g, '');
+    assert(!/fbevents\.js|facebook\.com\/tr|fbq\(/.test(src), `${f}: közvetlen Meta-kód a HTML-ben (csak hozzájárulás után, a main.js töltheti be)`);
+  }
+});
+
 await test('éles index.html: nincs privát kulcs a forrásban', async () => {
   const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
   assert(!/accessToken|private[_-]?key/i.test(html.replace(/<!--[\s\S]*?-->/g, '')), 'privát kulcsra utaló szöveg az oldalban');
@@ -766,7 +785,7 @@ async function openWithPixel(viewport, { url = BASE, id = PIXEL, init } = {}) {
   });
   await context.route((u) => u.href.startsWith(BASE) && (u.pathname.endsWith('/') || u.pathname.endsWith('.html')), async (route) => {
     const res = await route.fetch();
-    const body = (await res.text()).replace('data-meta-pixel=""', `data-meta-pixel="${id}"`);
+    const body = (await res.text()).replace(/data-meta-pixel="[^"]*"/, `data-meta-pixel="${id}"`);
     return route.fulfill({ response: res, body });
   });
   if (init) await context.addInitScript(init);
@@ -778,7 +797,7 @@ const fbQueue = (page) => page.evaluate(() => (window.fbq ? window.fbq.queue.map
 
 await test('Pixel ID nélkül: nincs sütisáv, nincs Süti-beállítások gomb, nincs Meta-kérés', async () => {
   for (const url of [BASE, `${BASE}koszonjuk.html`, `${BASE}cookie.html`]) {
-    const { page, context } = await open({ width: 1280, height: 800 }, { url });
+    const { page, context } = await openWithPixel({ width: 1280, height: 800 }, { url, id: '' });
     const s = await page.evaluate(() => ({
       banner: document.querySelectorAll('.consent').length,
       btn: document.querySelector('[data-consent-only]')?.hidden,
@@ -791,8 +810,11 @@ await test('Pixel ID nélkül: nincs sütisáv, nincs Süti-beállítások gomb,
 });
 
 await test('Pixel ID-vel: sütisáv jelenik meg, választás előtt nincs Meta-kérés; az aloldalak is átveszik az ID-t', async () => {
-  const html = await readFile(new URL('../koszonjuk.html', import.meta.url), 'utf8');
-  assert(/<html[^>]*data-meta-pixel=""/.test(html), 'az aloldal nem kapta meg a data-meta-pixel attribútumot (npm run pages)');
+  const pixelOf = async (f) => ((await readFile(new URL(`../${f}`, import.meta.url), 'utf8')).match(/<html[^>]*data-meta-pixel="([^"]*)"/) || [])[1];
+  const own = await pixelOf('index.html');
+  for (const f of ['koszonjuk.html', 'adatvedelem.html', 'cookie.html', 'impresszum.html']) {
+    assert((await pixelOf(f)) === own, `${f}: nem kapta meg a Pixel ID-t (npm run pages)`);
+  }
   for (const width of [320, 1440]) {
     const { page, context, fb } = await openWithPixel({ width, height: 800 });
     const s = await page.evaluate(() => ({
@@ -1159,7 +1181,7 @@ await test('érintőképernyőn nincs egérkövető fény', async () => {
   await context.close();
 });
 
-await test('a tesztek egyetlen valódi EmailJS-kérést sem küldtek', async () => {
+await test('a tesztek egyetlen valódi EmailJS- vagy Meta-kérést sem küldtek', async () => {
   assert(realEmailCalls.length === 0, `valódi kérések: ${realEmailCalls.join(', ')}`);
 });
 
